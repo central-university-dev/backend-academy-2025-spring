@@ -1,0 +1,25 @@
+package tbank.ab.domain
+
+import pureconfig.ConfigReader
+import sttp.tapir.{Codec, Schema}
+import tbank.ab.domain.habitat.Habitat
+import tethys.{JsonReader, JsonWriter}
+
+object animal {
+  opaque type AnimalId = String
+  object AnimalId:
+    def apply(id: String): AnimalId = id
+
+    given (using c: Codec.PlainCodec[String]): Codec.PlainCodec[AnimalId] = c
+    given (using c: ConfigReader[String]): ConfigReader[AnimalId]         = c
+
+  final case class AnimalInfo(
+    description: String,
+    habitat: Habitat,
+    features: List[String],
+    domesticatedYear: Option[Int]
+  ) derives ConfigReader,
+        Schema,
+        JsonReader,
+        JsonWriter
+}

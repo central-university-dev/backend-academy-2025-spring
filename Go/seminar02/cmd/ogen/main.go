@@ -15,12 +15,12 @@ func main() {
 	}
 
 	// Create generated server.
-	srv, err := api.NewServer(service, api.WithMiddleware(mw, parametrizedMw(5)))
+	srv, err := api.NewServer(service, &Auth{PIMPApiKey}, api.WithMiddleware(mw, parametrizedMw(5)))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := http.ListenAndServe("http://localhost:8080/v1", srv); err != nil {
+	if err := http.ListenAndServe("localhost:8080", srv); err != nil {
 		log.Fatal(err)
 	}
 }

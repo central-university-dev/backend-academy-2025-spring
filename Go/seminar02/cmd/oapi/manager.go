@@ -9,7 +9,7 @@ import (
 
 	api "example.com/seminar02/api/oapi"
 	"github.com/google/uuid"
-	openapi_types "github.com/oapi-codegen/runtime/types"
+	"github.com/oapi-codegen/runtime/types"
 )
 
 type taskManager struct {
@@ -27,12 +27,21 @@ func (m *taskManager) GetTasks(w http.ResponseWriter, _ *http.Request) {
 
 	data, _ := json.Marshal(tasks)
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
 }
 
 func (m *taskManager) PostTasks(w http.ResponseWriter, r *http.Request) {
+	// Ответственность за проверку авторизации всё равно ложится на разработчика.
+	apiKey := r.Header.Get("Api-Key")
+	if apiKey != "P.I.M.P." {
+		log.Printf("invalid api key [%s]\n", apiKey)
+
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -59,12 +68,12 @@ func (m *taskManager) PostTasks(w http.ResponseWriter, r *http.Request) {
 
 	data, _ := json.Marshal(&task)
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
 }
 
-func (m *taskManager) GetTasksTaskId(w http.ResponseWriter, r *http.Request, taskId openapi_types.UUID) {
+func (m *taskManager) GetTasksTaskId(w http.ResponseWriter, _ *http.Request, taskId types.UUID) {
 	task, ok := m.tasks[taskId.String()]
 	if !ok {
 		log.Printf("task [%s] not found\n", taskId)
@@ -77,17 +86,43 @@ func (m *taskManager) GetTasksTaskId(w http.ResponseWriter, r *http.Request, tas
 
 	data, _ := json.Marshal(&task)
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
 }
 
-func (m *taskManager) DeleteTasksTaskId(w http.ResponseWriter, r *http.Request, taskId openapi_types.UUID) {
-	//TODO implement me
-	panic("implement me")
+func (m *taskManager) DeleteTasksTaskId(w http.ResponseWriter, _ *http.Request, taskId types.UUID) {
+	_, ok := m.tasks[taskId.String()]
+	if !ok {
+		log.Printf("task [%s] not found\n", taskId)
+
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	log.Printf("task was found [%s]\n", taskId)
+
+	delete(m.tasks, taskId.String())
+
+	w.WriteHeader(http.StatusOK)
 }
 
-func (m *taskManager) PutTasksTaskId(w http.ResponseWriter, r *http.Request, taskId openapi_types.UUID) {
-	//TODO implement me
-	panic("implement me")
+func (m *taskManager) PutTasksTaskId(w http.ResponseWriter, _ *http.Request, taskId types.UUID) {
+	task, ok := m.tasks[taskId.String()]
+	if !ok {
+		log.Printf("task [%s] not found\n", taskId)
+
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// todo: update task fields
+
+	log.Printf("task was found [%s]\n", taskId)
+
+	data, _ := json.Marshal(&task)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
 }

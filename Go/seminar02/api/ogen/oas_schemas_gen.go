@@ -8,6 +8,20 @@ import (
 	"github.com/google/uuid"
 )
 
+type ApiKeyAuth struct {
+	APIKey string
+}
+
+// GetAPIKey returns the value of APIKey.
+func (s *ApiKeyAuth) GetAPIKey() string {
+	return s.APIKey
+}
+
+// SetAPIKey sets the value of APIKey.
+func (s *ApiKeyAuth) SetAPIKey(val string) {
+	s.APIKey = val
+}
+
 // Ref: #/components/schemas/DefaultError
 type DefaultError struct {
 	Code    int    `json:"code"`

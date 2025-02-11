@@ -6,12 +6,17 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+)
+
+const (
+	ApiKeyAuthScopes = "ApiKeyAuth.Scopes"
 )
 
 // DefaultError defines model for DefaultError.
@@ -52,6 +57,9 @@ type TaskInput struct {
 	// Title Заголовок задачи
 	Title string `json:"title"`
 }
+
+// TaskInputFields defines model for TaskInputFields.
+type TaskInputFields = TaskInput
 
 // PostTasksJSONRequestBody defines body for PostTasks for application/json ContentType.
 type PostTasksJSONRequestBody = TaskInput
@@ -103,6 +111,12 @@ func (siw *ServerInterfaceWrapper) GetTasks(w http.ResponseWriter, r *http.Reque
 
 // PostTasks operation middleware
 func (siw *ServerInterfaceWrapper) PostTasks(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostTasks(w, r)

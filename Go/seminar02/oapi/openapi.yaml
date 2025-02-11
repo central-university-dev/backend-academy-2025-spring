@@ -15,6 +15,9 @@ servers:
       version:
         default: 'v1'
 
+#security:
+#  - ApiKeyAuth: []
+
 tags:
   - name: open
     description: open methods
@@ -41,12 +44,10 @@ paths:
       tags:
         - secure
       summary: Создать новую задачу
+      security:
+        - ApiKeyAuth: []
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaskInput'
+        $ref: '#/components/requestBodies/TaskInputFields'
       responses:
         '201':
           description: Задача успешно создана
@@ -90,11 +91,7 @@ paths:
         - secure
       summary: Обновить существующую задачу
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaskInput'
+        $ref: '#/components/requestBodies/TaskInputFields'
       responses:
         '200':
           description: Задача успешно обновлена
@@ -168,16 +165,16 @@ components:
         message:
           type: string
 
+  requestBodies:
+    TaskInputFields:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TaskInput'
+
   securitySchemes:
-    api_key:
+    ApiKeyAuth:
       type: apiKey
-      name: api-key
+      name: Api-Key
       in: header
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://auth_api.org/api/oauth
-          scopes:
-            write:tasks: modify pets in your account
-            read:tasks: read your pets

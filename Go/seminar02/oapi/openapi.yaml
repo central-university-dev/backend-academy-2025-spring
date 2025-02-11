@@ -1,0 +1,183 @@
+openapi: "3.0.0"
+
+info:
+  title: Task Tracker API
+  description: API для управления задачами в таск-трекере
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/{version}
+    variables:
+      version:
+        default: 'v1'
+  - url: http://production/api/{version}
+    variables:
+      version:
+        default: 'v1'
+
+tags:
+  - name: open
+    description: open methods
+  - name: secure
+    description: authorized methods
+
+paths:
+  /tasks:
+    get:
+      tags:
+        - open
+      summary: Получить список всех задач
+      responses:
+        '200':
+          description: Успешно возвращает список задач
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+    post:
+      tags:
+        - secure
+      summary: Создать новую задачу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '201':
+          description: Задача успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        default:
+          description: Ошибка создания задачи
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+
+  /tasks/{taskId}:
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        description: ID задачи
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags:
+        - open
+      summary: Получить задачу по ID
+      responses:
+        '200':
+          description: Успешно возвращает задачу
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Задача не найдена
+
+    put:
+      tags:
+        - secure
+      summary: Обновить существующую задачу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '200':
+          description: Задача успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Задача не найдена
+
+    delete:
+      tags:
+        - secure
+      summary: Удалить задачу
+      responses:
+        '204':
+          description: Задача успешно удалена
+        '404':
+          description: Задача не найдена
+
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор задачи
+        title:
+          type: string
+          description: Заголовок задачи
+        description:
+          type: string
+          description: Подробное описание задачи
+        completed:
+          type: boolean
+          description: Статус выполнения задачи
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания задачи
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления задачи
+
+    TaskInput:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          description: Заголовок задачи
+        description:
+          type: string
+          description: Подробное описание задачи
+        completed:
+          type: boolean
+          description: Статус выполнения задачи (по умолчанию false)
+
+    DefaultError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api-key
+      in: header
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://auth_api.org/api/oauth
+          scopes:
+            write:tasks: modify pets in your account
+            read:tasks: read your pets

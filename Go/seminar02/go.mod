@@ -14,6 +14,7 @@ require (
 	github.com/go-openapi/validate v0.24.0
 	github.com/google/uuid v1.6.0
 	github.com/jessevdk/go-flags v1.6.1
+	github.com/oapi-codegen/runtime v1.1.1
 	github.com/ogen-go/ogen v1.10.0
 	go.opentelemetry.io/otel v1.34.0
 	go.opentelemetry.io/otel/metric v1.34.0
@@ -23,6 +24,7 @@ require (
 )
 
 require (
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/docker/go-units v0.5.0 // indirect

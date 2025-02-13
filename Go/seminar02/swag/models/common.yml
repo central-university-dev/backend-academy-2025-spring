@@ -1,0 +1,29 @@
+components:
+  schemas:
+    Status:
+      type: object
+      required:
+        - code
+        - message
+        - msgId
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        msgId:
+          type: string
+
+    EmptyResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: 'common.yml#/components/schemas/Status'
+
+    BaseResponse:
+      description: universal response is used for NoContent and AnyError answers, contains field Status as any data answers
+      schema:
+        $ref: 'common.yml#/components/schemas/EmptyResponse'

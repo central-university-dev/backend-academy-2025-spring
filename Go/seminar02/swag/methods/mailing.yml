@@ -1,0 +1,21 @@
+email_subscribe:
+  post:
+    tags:
+      - open
+    operationId: subscribeMailing
+    description: request subscribe to mailing list
+    parameters:
+      - in: query
+        name: email
+        type: string
+        format: email
+        required: true
+      - in: query
+        name: name
+        type: string
+        required: true
+    security: [ ]
+    responses:
+      default:
+        schema:
+          $ref: '../models/common.yml#/components/schemas/BaseResponse'

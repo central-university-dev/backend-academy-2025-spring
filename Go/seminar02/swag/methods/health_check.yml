@@ -1,0 +1,20 @@
+health_check:
+  get:
+    tags:
+      - open
+    operationId: healthCheck
+    description: check service work correctly
+    security: [ ]
+    responses:
+      default: { $ref: '../models/common.yml#/components/schemas/BaseResponse' }
+
+auth_check:
+  get:
+    tags:
+      - secure
+    operationId: authCheck
+    description: check service work correctly
+    security:
+      - ApiKeyAuth: [ ]
+    responses:
+      default: { $ref: '../models/common.yml#/components/schemas/BaseResponse' }

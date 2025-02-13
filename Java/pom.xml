@@ -36,6 +36,7 @@
 
     <modules>
         <module>seminar1</module>
+        <module>seminar2</module>
     </modules>
 
     <dependencyManagement>

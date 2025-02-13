@@ -1,0 +1,60 @@
+### 1. Создание профиля пользователя
+POST http://localhost:8080/api/profiles
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "Иван Иванов",
+  "email": "ivan@example.com",
+  "age": 25
+}
+
+### 2. Получение профиля по ID
+GET http://localhost:8080/api/profiles/1
+
+### 3. Фильтрация профилей по имени и возрасту
+GET http://localhost:8080/api/profiles?name=Иван&age=25
+
+### 4. Обновление профиля
+PUT http://localhost:8080/api/profiles/1
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "Иван Петров",
+  "email": "ivan@example.com",
+  "age": 30
+}
+
+### 5. Удаление профиля
+DELETE http://localhost:8080/api/profiles/1
+Authorization: Basic admin password
+
+### 6. Попытка создания профиля с невалидными данными
+POST http://localhost:8080/api/profiles
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "",
+  "email": "invalid-email",
+  "age": -5
+}
+
+### 7. Попытка получения несуществующего профиля
+GET http://localhost:8080/api/profiles/999
+
+### 8. Попытка обновления несуществующего профиля
+PUT http://localhost:8080/api/profiles/999
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "Несуществующий пользователь",
+  "email": "nonexistent@example.com",
+  "age": 100
+}
+
+### 9. Попытка удаления несуществующего профиля
+DELETE http://localhost:8080/api/profiles/999
+Authorization: Basic admin password

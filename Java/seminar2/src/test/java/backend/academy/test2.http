@@ -1,0 +1,128 @@
+### 1. Создание профиля пользователя
+POST http://localhost:8080/api/profiles
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "Иван Иванов",
+  "email": "ivan@example.com",
+  "age": 25
+}
+
+> {%
+    client.test("Profile created successfully", function() {
+        client.assert(response.status === 201, "Expected status code 201, but got " + response.status);
+        client.assert(response.body.id === 1, "Expected ID 1, but got " + response.body.id);
+        client.assert(response.body.name === "Иван Иванов", "Expected name 'Иван Иванов', but got " + response.body.name);
+        client.assert(response.body.email === "ivan@example.com", "Expected email 'ivan@example.com', but got " + response.body.email);
+        client.assert(response.body.age === 25, "Expected age 25, but got " + response.body.age);
+    });
+%}
+
+### 2. Получение профиля по ID
+GET http://localhost:8080/api/profiles/1
+
+> {%
+    client.test("Profile retrieved successfully", function() {
+        client.assert(response.status === 200, "Expected status code 200, but got " + response.status);
+        client.assert(response.body.id === 1, "Expected ID 1, but got " + response.body.id);
+        client.assert(response.body.name === "Иван Иванов", "Expected name 'Иван Иванов', but got " + response.body.name);
+        client.assert(response.body.email === "ivan@example.com", "Expected email 'ivan@example.com', but got " + response.body.email);
+        client.assert(response.body.age === 25, "Expected age 25, but got " + response.body.age);
+    });
+%}
+
+### 3. Фильтрация профилей по имени и возрасту
+GET http://localhost:8080/api/profiles?name=Иван&age=25
+
+> {%
+    client.test("Profiles filtered successfully", function() {
+        client.assert(response.status === 200, "Expected status code 200, but got " + response.status);
+        client.assert(Array.isArray(response.body), "Expected an array of profiles");
+        client.assert(response.body.length === 1, "Expected 1 profile, but got " + response.body.length);
+        client.assert(response.body[0].name === "Иван Иванов", "Expected name 'Иван Иванов', but got " + response.body[0].name);
+    });
+%}
+
+### 4. Обновление профиля
+PUT http://localhost:8080/api/profiles/1
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "Иван Петров",
+  "email": "ivan@example.com",
+  "age": 30
+}
+
+> {%
+    client.test("Profile updated successfully", function() {
+        client.assert(response.status === 200, "Expected status code 200, but got " + response.status);
+    });
+%}
+
+### 5. Удаление профиля
+DELETE http://localhost:8080/api/profiles/1
+Authorization: Basic admin password
+
+> {%
+    client.test("Profile deleted successfully", function() {
+        client.assert(response.status === 204, "Expected status code 204, but got " + response.status);
+    });
+%}
+
+### 6. Попытка создания профиля с невалидными данными
+POST http://localhost:8080/api/profiles
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "",
+  "email": "invalid-email",
+  "age": -5
+}
+
+> {%
+    client.test("Validation failed", function() {
+        client.assert(response.status === 400, "Expected status code 400, but got " + response.status);
+        client.assert(response.body.name === "Name cannot be blank", "Expected error for name");
+        client.assert(response.body.email === "Email must be valid", "Expected error for email");
+        client.assert(response.body.age === "Age must be a positive number", "Expected error for age");
+    });
+%}
+
+### 7. Попытка получения несуществующего профиля
+GET http://localhost:8080/api/profiles/999
+
+> {%
+    client.test("Profile not found", function() {
+        client.assert(response.status === 404, "Expected status code 404, but got " + response.status);
+    });
+%}
+
+### 8. Попытка обновления несуществующего профиля
+PUT http://localhost:8080/api/profiles/999
+Content-Type: application/json
+Authorization: Basic admin password
+
+{
+  "name": "Несуществующий пользователь",
+  "email": "nonexistent@example.com",
+  "age": 100
+}
+
+> {%
+    client.test("Profile not found", function() {
+        client.assert(response.status === 404, "Expected status code 404, but got " + response.status);
+    });
+%}
+
+### 9. Попытка удаления несуществующего профиля
+DELETE http://localhost:8080/api/profiles/999
+Authorization: Basic admin password
+
+> {%
+    client.test("Profile not found", function() {
+        client.assert(response.status === 404, "Expected status code 404, but got " + response.status);
+    });
+%}

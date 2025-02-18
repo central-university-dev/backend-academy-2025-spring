@@ -1,0 +1,1 @@
+org.springframework.test.context.ContextCustomizerFactory=ru.tbank.sem3.context.ContextCounterFactory

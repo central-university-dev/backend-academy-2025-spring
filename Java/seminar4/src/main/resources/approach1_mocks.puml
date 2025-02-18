@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+skinparam linetype polyline
+skinparam linetype ortho
+
+package "Test Environment" {
+  [Test Suite] as TS
+  [Application] as AUT
+  [Mocked Kafka Service] as MKS
+  [Mocked Postgres Service] as MPS
+  [Mocked Redis Service] as MRS
+  [Mocked HTTP Service] as MHS
+  [Mockito] as M
+}
+
+TS --> AUT : Execute Integration Tests
+AUT <--> MKS
+AUT <--> MPS
+AUT <--> MRS
+AUT <--> MHS
+AUT <--> M
+MKS <..> M
+MPS <..> M
+MRS <..> M
+MHS <..> M
+
+note right of AUT
+  Creates mocked classes with Mockito,
+  and defines mocked responses
+end note
+
+@enduml

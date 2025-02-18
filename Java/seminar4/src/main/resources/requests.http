@@ -1,0 +1,12 @@
+### Register a new user
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+    "name": "test user",
+    "email": "test@mail.com"
+}
+
+### Get a list of registered users
+GET http://localhost:8080/api/users
+Accept: application/json

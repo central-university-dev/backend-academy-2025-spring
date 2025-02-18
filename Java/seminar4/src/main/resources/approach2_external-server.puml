@@ -1,0 +1,28 @@
+@startuml
+!theme plain
+skinparam linetype polyline
+skinparam linetype ortho
+
+package "Local Test Environment" {
+  [Test Suite] as TS
+  [Application] as AUT
+}
+
+node "Test Server" {
+  [Kafka Server] as KS
+  [Postgres Server] as PS
+  [Redis Server] as RS
+  [HTTP Server] as HS
+}
+
+TS --> AUT : Execute Integration Tests
+AUT <--> KS
+AUT <--> PS
+AUT <--> RS
+AUT <--> HS
+
+note right of AUT
+  Application calls services on external server OR deployed on the test server.
+end note
+
+@enduml

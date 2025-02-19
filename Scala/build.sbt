@@ -2,14 +2,16 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "3.3.5"
 
-val `cats-core-version`    = "2.13.0"
-val `cats-effect-version`  = "3.5.7"
-val `tapir-version`        = "1.11.13"
-val `http4s-version`       = "0.23.30"
-val `sttp-client3-version` = "3.10.2"
-val `logback-version`      = "1.5.16"
-val `tethys-version`       = "0.29.3"
-val `pureconfig-version`   = "0.17.8"
+val `cats-core-version`      = "2.13.0"
+val `cats-effect-version`    = "3.5.7"
+val `tapir-version`          = "1.11.13"
+val `http4s-version`         = "0.23.30"
+val `sttp-client3-version`   = "3.10.2"
+val `logback-version`        = "1.5.16"
+val `tethys-version`         = "0.29.3"
+val `pureconfig-version`     = "0.17.8"
+val `tofu-version`           = "0.13.6"
+val `asyncapi-circe-version` = "0.11.7"
 
 val deps = Seq(
   // cats
@@ -17,10 +19,12 @@ val deps = Seq(
   "org.typelevel" %% "cats-effect" % `cats-effect-version`,
 
   // tapir
-  "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % `tapir-version`,
-  "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % `tapir-version`,
-  "com.softwaremill.sttp.tapir" %% "tapir-json-tethys"       % `tapir-version`,
-  "com.softwaremill.sttp.tapir" %% "tapir-sttp-client"       % `tapir-version`,
+  "com.softwaremill.sttp.tapir"   %% "tapir-http4s-server"     % `tapir-version`,
+  "com.softwaremill.sttp.tapir"   %% "tapir-swagger-ui-bundle" % `tapir-version`,
+  "com.softwaremill.sttp.tapir"   %% "tapir-json-tethys"       % `tapir-version`,
+  "com.softwaremill.sttp.tapir"   %% "tapir-sttp-client"       % `tapir-version`,
+  "com.softwaremill.sttp.tapir"   %% "tapir-asyncapi-docs"     % `tapir-version`,
+  "com.softwaremill.sttp.apispec" %% "asyncapi-circe-yaml"     % `asyncapi-circe-version`,
 
   // http4s
   "org.http4s" %% "http4s-ember-server" % `http4s-version`,
@@ -41,7 +45,12 @@ val deps = Seq(
 
   // pureconfig
   "com.github.pureconfig" %% "pureconfig-core"           % `pureconfig-version`,
-  "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`
+  "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`,
+
+  // tofu
+  "tf.tofu" %% "tofu-logging"            % `tofu-version`,
+  "tf.tofu" %% "tofu-logging-derivation" % `tofu-version`,
+  "tf.tofu" %% "tofu-core-ce3"           % `tofu-version`
 )
 
 lazy val `seminar-1` = project
@@ -50,6 +59,11 @@ lazy val `seminar-1` = project
   )
 
 lazy val `seminar-2` = project
+  .settings(
+    libraryDependencies ++= deps
+  )
+
+lazy val `seminar-3` = project
   .settings(
     libraryDependencies ++= deps
   )

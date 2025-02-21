@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package streaming;
+
+service StreamingService {
+  rpc GetNumbers(NumberRequest) returns (stream NumberResponse);
+}
+
+message NumberRequest {
+  int32 count = 1;
+}
+
+message NumberResponse {
+  int32 number = 1;
+}

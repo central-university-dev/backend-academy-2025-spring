@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package client_streaming;
+
+service ClientStreamingService {
+    rpc SendNumbers (stream NumberRequest) returns (NumberResponse);
+}
+
+message NumberRequest {
+    int32 number = 1;
+}
+
+message NumberResponse {
+    int32 sum = 1;
+}
+

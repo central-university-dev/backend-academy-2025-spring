@@ -1,3 +1,6 @@
+import com.typesafe.sbt.packager.Keys.dockerEnvVars
+import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.Docker
+
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "3.3.5"
@@ -10,10 +13,11 @@ val `sttp-client3-version`   = "3.10.2"
 val `logback-version`        = "1.5.16"
 val `tethys-version`         = "0.29.3"
 val `pureconfig-version`     = "0.17.8"
-val `tofu-version`           = "0.13.6"
 val `asyncapi-circe-version` = "0.11.7"
+val `weaver-version`         = "0.8.4"
+val `testcontainers-version` = "0.41.8"
 
-val deps = Seq(
+val deps = List(
   // cats
   "org.typelevel" %% "cats-core"   % `cats-core-version`,
   "org.typelevel" %% "cats-effect" % `cats-effect-version`,
@@ -45,12 +49,15 @@ val deps = Seq(
 
   // pureconfig
   "com.github.pureconfig" %% "pureconfig-core"           % `pureconfig-version`,
-  "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`,
+  "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`
+)
 
-  // tofu
-  "tf.tofu" %% "tofu-logging"            % `tofu-version`,
-  "tf.tofu" %% "tofu-logging-derivation" % `tofu-version`,
-  "tf.tofu" %% "tofu-core-ce3"           % `tofu-version`
+val testDeps = List(
+  // for tests
+  "com.disneystreaming" %% "weaver-cats"                     % `weaver-version`         % Test,
+  "com.dimafeng"        %% "testcontainers-scala-scalatest"  % `testcontainers-version` % Test,
+  "com.dimafeng"        %% "testcontainers-scala-postgresql" % `testcontainers-version` % Test, // example for psql
+  "com.dimafeng" %% "testcontainers-scala-mockserver" % `testcontainers-version` % Test // example for mockserver
 )
 
 lazy val `seminar-1` = project
@@ -66,4 +73,25 @@ lazy val `seminar-2` = project
 lazy val `seminar-3` = project
   .settings(
     libraryDependencies ++= deps
+  )
+
+lazy val `seminar-4` = project
+  .settings(
+    libraryDependencies ++= deps
+  )
+  // Set docker build
+  .enablePlugins(
+    DockerPlugin,
+    JavaAppPackaging
+  )
+  .settings(
+// ??? Добавьте парамеры для docker
+  )
+
+lazy val `seminar-4-it` = project
+  .dependsOn(`seminar-4`)
+  // Set tests
+  .settings(
+    libraryDependencies ++= testDeps,
+    testFrameworks += new TestFramework("weaver.framework.CatsEffect")
   )

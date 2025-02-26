@@ -1,0 +1,5 @@
+services:
+  my-pet-service:
+    image: tbank-ab:0.1.0-SNAPSHOT
+    ports:
+      - "8080:8080"

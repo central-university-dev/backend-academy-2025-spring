@@ -1,0 +1,22 @@
+services:
+  cache:
+    image: valkey/valkey:7.2.5
+    command: ["valkey-server", "/etc/valkey/valkey.conf"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./valkey.conf:/etc/valkey/valkey.conf
+      - ./users.acl:/etc/valkey/users.acl
+    restart: unless-stopped
+
+  app:
+    build:
+      context: ..
+      dockerfile: ./docker-deploy/app.Dockerfile
+    depends_on:
+      - cache
+    ports:
+      - "8080:8080"
+    env_file:
+      - app.env
+    restart: unless-stopped

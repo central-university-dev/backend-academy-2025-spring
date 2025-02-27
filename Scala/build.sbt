@@ -5,17 +5,18 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "3.3.5"
 
-val `cats-core-version`      = "2.13.0"
-val `cats-effect-version`    = "3.5.7"
-val `tapir-version`          = "1.11.13"
-val `http4s-version`         = "0.23.30"
-val `sttp-client3-version`   = "3.10.2"
-val `logback-version`        = "1.5.16"
-val `tethys-version`         = "0.29.3"
-val `pureconfig-version`     = "0.17.8"
-val `asyncapi-circe-version` = "0.11.7"
-val `weaver-version`         = "0.8.4"
-val `testcontainers-version` = "0.41.8"
+val `cats-core-version`         = "2.13.0"
+val `cats-effect-version`       = "3.5.7"
+val `tapir-version`             = "1.11.13"
+val `http4s-version`            = "0.23.30"
+val `sttp-client3-version`      = "3.10.2"
+val `logback-version`           = "1.5.16"
+val `tethys-version`            = "0.29.3"
+val `pureconfig-version`        = "0.17.8"
+val `asyncapi-circe-version`    = "0.11.7"
+val `weaver-version`            = "0.8.4"
+val `testcontainers-version`    = "0.41.8"
+val `mockserver-client-version` = "5.15.0"
 
 val deps = List(
   // cats
@@ -54,10 +55,10 @@ val deps = List(
 
 val testDeps = List(
   // for tests
-  "com.disneystreaming" %% "weaver-cats"                     % `weaver-version`         % Test,
-  "com.dimafeng"        %% "testcontainers-scala-scalatest"  % `testcontainers-version` % Test,
-  "com.dimafeng"        %% "testcontainers-scala-postgresql" % `testcontainers-version` % Test, // example for psql
-  "com.dimafeng" %% "testcontainers-scala-mockserver" % `testcontainers-version` % Test // example for mockserver
+  "com.disneystreaming" %% "weaver-cats" % `weaver-version` % Test,
+  // containers - https://github.com/testcontainers/testcontainers-scala/blob/master/docs/src/main/tut/setup.md
+  "com.dimafeng"   %% "testcontainers-scala-mockserver" % `testcontainers-version`    % Test, // example for mockserver
+  "org.mock-server" % "mockserver-client-java"          % `mockserver-client-version` % Test
 )
 
 lazy val `seminar-1` = project

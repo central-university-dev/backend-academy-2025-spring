@@ -2,9 +2,10 @@ package tbank.ab
 
 import cats.effect.kernel.Resource
 import cats.effect.{ExitCode, IO, IOApp}
-import com.comcast.ip4s.{Host, Port}
+import com.comcast.ip4s.Port
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.{Router, Server}
+import pureconfig.ConfigSource
 import sttp.apispec.asyncapi.circe.yaml.*
 import sttp.capabilities.WebSockets
 import sttp.capabilities.fs2.Fs2Streams
@@ -25,7 +26,7 @@ object Seminar4App extends IOApp:
   def application: Resource[IO, Server] =
     for {
       _            <- Resource.make(IO.println("Starting application..."))(_ => IO.println("Application closed"))
-      config       <- AppConfig.load.toResource
+      config       <- AppConfig.load(ConfigSource.default).toResource
       repositories <- Repositories.make(config).toResource
       services = Services.make(config, repositories)
       endpoints: List[ServerEndpoint[Fs2Streams[IO] & WebSockets, IO]] =
@@ -67,7 +68,7 @@ object Seminar4App extends IOApp:
               s"Swagger available at http://localhost:${server.address.getPort}/docs"
             )
           )
-      _ <- Resource.make(IO.println("Application started"))(_ => IO.println("Closing application"))
+      _ <- Resource.make(IO.println("Application started"))(_ => IO.println("Closing application..."))
     } yield server
 
   private def getPortSafe(v: Int): IO[Port] =

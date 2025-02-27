@@ -57,14 +57,14 @@ object Seminar4App extends IOApp:
       server <-
         EmberServerBuilder
           .default[IO]
-          .withHost(Host.fromString("localhost").get)
+          .withoutHost
           .withPort(port)
           .withHttpWebSocketApp(ws => Router("/" -> routes(ws)).orNotFound)
           .build
           .evalTap(server =>
             IO.println(asyncApi.toYaml) *>
             IO.println(
-              s"Server available at http://localhost:${server.address.getPort}"
+              s"Swagger available at http://localhost:${server.address.getPort}/docs"
             )
           )
       _ <- Resource.make(IO.println("Application started"))(_ => IO.println("Closing application"))

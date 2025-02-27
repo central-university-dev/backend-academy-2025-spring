@@ -85,7 +85,11 @@ lazy val `seminar-4` = project
     JavaAppPackaging
   )
   .settings(
-// ??? Добавьте парамеры для docker
+    Compile / mainClass  := Some("tbank.ab.Seminar4App"), // class which will be run
+    dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
+    dockerExposedPorts   := List(8080),                   // defines exposing ports of the Docker image
+    Docker / packageName := "tbank-ab",                   // name of the Docker image
+    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
 lazy val `seminar-4-it` = project

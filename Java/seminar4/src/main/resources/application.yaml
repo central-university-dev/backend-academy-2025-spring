@@ -1,0 +1,16 @@
+spring:
+    datasource:
+        url: jdbc:postgresql://localhost:5432/test
+        username: test
+        password: test
+    sql:
+        init:
+            mode: always
+    mail:
+        host: localhost
+        username: test
+        password: test
+        port: 1025
+    docker:
+        compose:
+            enabled: false

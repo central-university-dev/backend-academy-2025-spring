@@ -1,0 +1,23 @@
+version: '3.1'
+
+name: sem5
+
+services:
+  postgres-db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: seminar5
+    ports:
+      - "5432:5432"
+
+  liquibase:
+    image: liquibase/liquibase
+    container_name: liquibase_migrations
+    depends_on:
+      - postgres-db
+    volumes:
+      - ./changelog:/liquibase/changelog
+    command: ["update", "--url=jdbc:postgresql://postgres-db:5432/seminar5", "--username=postgres", "--password=password", "--changeLogFile=changelog/db.changelog.sql"]

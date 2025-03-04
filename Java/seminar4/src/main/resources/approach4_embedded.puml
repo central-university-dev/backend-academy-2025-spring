@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+skinparam linetype polyline
+skinparam linetype ortho
+
+package "Local Test Environment" {
+  [Test Suite] as TS
+  [Application] as AUT
+  [Embedded Kafka Lib] as EKL
+  [Embedded Postgres/H2/Derby Lib] as EPL
+  [Embedded Redis Lib] as ERL
+  [Embedded HTTP Lib] as EHL
+  [Embedded Kafka] as EK
+  [Embedded Postgres/H2/Derby] as EP
+  [Embedded Redis] as ER
+  [Embedded HTTP Server] as EH
+}
+
+TS --> AUT : Execute Integration Tests
+AUT <--> EKL
+AUT <--> EPL
+AUT <--> ERL
+AUT <--> EHL
+EKL <..> EK
+EPL <..> EP
+ERL <..> ER
+EHL <..> EH
+
+note right of AUT
+  Application calls embedded or in-memory servers
+end note
+
+@enduml

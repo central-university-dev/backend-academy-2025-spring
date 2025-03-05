@@ -32,6 +32,11 @@ func main() {
 
 	defer func() { _ = conn.Close(ctx) }()
 
+	// Очень рекомендуется проверять соединение при инициализации до реальных запросов
+	if err := conn.Ping(ctx); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := scanRow(ctx, 3, conn); err != nil {
 		log.Fatal(err)
 	}

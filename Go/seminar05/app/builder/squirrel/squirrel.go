@@ -14,7 +14,12 @@ func main() {
 func buildQueries() {
 	builder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
-	query, args, _ := buildComplexSelectQuery(builder)
+	query, args, _ := buildComplexSelectQuerySquirrel()
+	fmt.Println(query)
+	fmt.Println(args)
+	fmt.Println()
+
+	query, args, _ = buildComplexSelectQuery(builder)
 	fmt.Println(query)
 	fmt.Println(args)
 	fmt.Println()
@@ -43,6 +48,18 @@ func buildQueries() {
 	fmt.Println(query)
 	fmt.Println(args)
 	fmt.Println(err)
+}
+
+func buildComplexSelectQuerySquirrel() (string, []interface{}, error) {
+	return squirrel.Select("u.id", "u.name", "COUNT(o.id) AS order_count").
+		From("users u").
+		LeftJoin("orders o ON u.id = o.user_id").
+		Where(squirrel.Eq{"u.active": true}).
+		GroupBy("u.id", "u.name").
+		Having("COUNT(o.id) > ?", 5).
+		OrderBy("order_count DESC").
+		Limit(10).
+		ToSql()
 }
 
 func buildComplexSelectQuery(builder squirrel.StatementBuilderType) (string, []interface{}, error) {
@@ -119,14 +136,14 @@ func bdExec(db *sql.DB) {
 	// RunWith in prepare
 	builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).RunWith(db)
 
-	raw := builder.Select("id", "user_name").
+	row := builder.Select("id", "user_name").
 		From("users").
 		Where(squirrel.Eq{"id": 1}).
 		QueryRow()
 
 	var id int64
 	var name string
-	if err := raw.Scan(&id, &name); err != nil {
+	if err := row.Scan(&id, &name); err != nil {
 		panic(err)
 	}
 }

@@ -22,11 +22,11 @@ type (
 	}
 
 	Database struct {
-		Host     string `yaml:"host" env:"DB_HOST" envDefault:"localhost"`
-		Port     int    `yaml:"port" env:"DB_PORT" envDefault:"5432"`
-		Username string `yaml:"username" env:"DB_USERNAME" envDefault:"admin"`
-		Password string `yaml:"password" env:"DB_PASSWORD" envDefault:"admin"`
-		Name     string `yaml:"name" env:"DB_NAME" envDefault:"seminar05"`
+		Host     string `env:"DB_HOST" envDefault:"localhost"`
+		Port     int    `env:"DB_PORT" envDefault:"5432"`
+		Username string `env:"DB_USERNAME" envDefault:"admin"`
+		Password string `env:"DB_PASSWORD" envDefault:"admin"`
+		Name     string `env:"DB_NAME" envDefault:"seminar05"`
 	}
 )
 

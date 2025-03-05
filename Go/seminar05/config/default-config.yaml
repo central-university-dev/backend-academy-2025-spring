@@ -1,0 +1,6 @@
+database:
+  host: localhost
+  port: 54321
+  username: admin_admin
+  password: password_password
+  name: seminar05_seminar05

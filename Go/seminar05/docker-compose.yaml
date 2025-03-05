@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:14.1-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
+    container_name: seminar05
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+      PGDATA: /data/postgres

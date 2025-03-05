@@ -1,5 +1,6 @@
 package tbank.ab.domain
 
+import doobie.{Get, Put, Read}
 import pureconfig.ConfigReader
 import sttp.tapir.{Codec, Schema}
 import sttp.tapir.Codec.PlainCodec
@@ -25,6 +26,9 @@ object habitat {
 
     given JsonWriter[Habitat] =
       JsonWriter[String].contramap(_.toString.toLowerCase)
+
+    given Get[Habitat] = Get[String].tmap(s => Habitat.valueOf(s.capitalize))
+    given Put[Habitat] = Put[String].tcontramap(_.toString.toLowerCase)
   }
 
   object error {

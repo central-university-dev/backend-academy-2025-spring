@@ -6,6 +6,6 @@ case class AnimalInfoRepository(
   id: Int,
   name: String,
   description: String,
-  habitat: String,
+  habitat: Habitat,
   domesticatedYear: Option[Int]
 )

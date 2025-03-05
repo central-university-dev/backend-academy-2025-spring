@@ -1,8 +1,7 @@
 import com.typesafe.sbt.packager.Keys.dockerEnvVars
 import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.Docker
 
-ThisBuild / version := "0.1.0-SNAPSHOT"
-
+ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.5"
 
 val `cats-core-version`         = "2.13.0"
@@ -17,8 +16,11 @@ val `asyncapi-circe-version`    = "0.11.7"
 val `weaver-version`            = "0.8.4"
 val `testcontainers-version`    = "0.41.8"
 val `mockserver-client-version` = "5.15.0"
+val `doobie-version`            = "1.0.0-RC8"
+val `liquibase-version`         = "4.27.0"
+val `h2-version`                = "2.3.232"
 
-val deps = List(
+val deps: List[ModuleID] = List(
   // cats
   "org.typelevel" %% "cats-core"   % `cats-core-version`,
   "org.typelevel" %% "cats-effect" % `cats-effect-version`,
@@ -53,12 +55,21 @@ val deps = List(
   "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`
 )
 
-val testDeps = List(
+val testDeps: List[ModuleID] = List(
   // for tests
   "com.disneystreaming" %% "weaver-cats" % `weaver-version` % Test,
   // containers - https://github.com/testcontainers/testcontainers-scala/blob/master/docs/src/main/tut/setup.md
   "com.dimafeng"   %% "testcontainers-scala-mockserver" % `testcontainers-version`    % Test, // example for mockserver
   "org.mock-server" % "mockserver-client-java"          % `mockserver-client-version` % Test
+)
+
+val dbDeps: List[ModuleID] = List(
+  "com.h2database" % "h2"              % `h2-version`,
+  "org.liquibase"  % "liquibase-core"  % `liquibase-version`,
+  "org.tpolecat"  %% "doobie-core"     % `doobie-version`,
+  "org.tpolecat"  %% "doobie-postgres" % `doobie-version`,
+  "org.tpolecat"  %% "doobie-h2"       % `doobie-version`,
+  "org.tpolecat"  %% "doobie-hikari"   % `doobie-version`
 )
 
 lazy val `seminar-1` = project
@@ -95,8 +106,14 @@ lazy val `seminar-4` = project
 
 lazy val `seminar-4-it` = project
   .dependsOn(`seminar-4`)
-  // Set tests
+  // Set it tests
   .settings(
     libraryDependencies ++= testDeps,
     testFrameworks += new TestFramework("weaver.framework.CatsEffect")
   )
+
+lazy val `seminar-5` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")

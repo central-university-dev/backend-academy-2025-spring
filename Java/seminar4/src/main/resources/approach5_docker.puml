@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam linetype polyline
+skinparam linetype ortho
+
+package "Local Test Environment" {
+  [Test Suite] as TS
+  [Application] as AUT
+}
+
+node "Docker Environment" {
+  [Kafka Container] as KC
+  [Postgres Container] as PC
+  [Redis Container] as RC
+  [HTTP Container] as HC
+  [Kafka Server] as KS
+  [Postgres Server] as PS
+  [Redis Server] as RS
+  [HTTP Server] as HS
+}
+
+TS --> AUT : Execute Integration Tests
+AUT <--> KC
+AUT <--> PC
+AUT <--> RC
+AUT <--> HC
+KC <..> KS
+PC <..> PS
+RC <..> RS
+HC <..> HS
+
+note right of AUT
+  Application creates and starts Docker-containers
+end note
+
+@enduml

@@ -38,6 +38,8 @@
         <module>seminar1</module>
         <module>seminar2</module>
         <module>seminar3</module>
+        <module>seminar4</module>
+        <module>seminar5</module>
     </modules>
 
     <dependencyManagement>

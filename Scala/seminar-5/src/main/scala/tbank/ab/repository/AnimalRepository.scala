@@ -25,7 +25,8 @@ object AnimalRepository {
     transactor: Transactor[IO]
   ) extends AnimalRepository[IO] {
     override def find(id: AnimalId): IO[Option[AnimalInfo]] =
-      sql"select * from animal_info where name = ${id.toString}"
+      sql"""select a.id, name, description, val, domesticated_year from animal_info as a
+           left join habitat as h on habitat_id = h.id where name = ${id.toString}"""
         .query[AnimalInfoRepository]
         .option
         .transact[IO](transactor)
@@ -33,7 +34,7 @@ object AnimalRepository {
           _.map(info =>
             AnimalInfo(
               description = info.description,
-              habitat = Habitat.Forest, // fix me
+              habitat = info.habitat, // fix me
               features = List.empty,
               domesticatedYear = info.domesticatedYear,
               voice = None
@@ -41,7 +42,16 @@ object AnimalRepository {
           )
         )
 
-    override def update(id: AnimalId, info: AnimalInfo): IO[AnimalInfo] = ???
+    override def update(id: AnimalId, info: AnimalInfo): IO[AnimalInfo] =
+      sql"""update animal_info set
+            description = ${info.description},
+            domesticated_year = ${info.domesticatedYear},
+            habitat_id = (select id from habitat where val = ${info.habitat})
+            where name = ${id.toString}
+         """
+        .update.run
+        .transact[IO](transactor)
+        .as(info)
   }
 
   def make(using database: DatabaseModule): AnimalRepository[IO] =

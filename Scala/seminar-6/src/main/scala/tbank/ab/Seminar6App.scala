@@ -27,7 +27,7 @@ object Seminar6App extends IOApp {
       given ServerConfig = summon[AppConfig].server
 
       // Connect to db
-      given DatabaseModule <- DatabaseModule.makeHikari
+      given DatabaseModule = DatabaseModule.make
       _                    <- LiquibaseMigration.run().toResource
 
       // Create wiring

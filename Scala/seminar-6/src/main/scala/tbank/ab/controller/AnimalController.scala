@@ -15,7 +15,7 @@ private class AnimalController(
   
   private val allAnimals: ServerEndpoint[Fs2Streams[IO], IO] =
     AnimalEndpoints.allAnimals
-      .serverLogicSuccess {_ =>
+      .serverLogicSuccessPure {_ =>
         animalService.allAnimals
       }
 
@@ -49,8 +49,8 @@ private class AnimalController(
         }
       }
 
-  override val endpoints: List[ServerEndpoint[Any, IO]] =
-    List(animalDescription, animalInfo, updateAnimalInfo)
+  override val endpoints: List[ServerEndpoint[Fs2Streams[IO], IO]] =
+    List(animalDescription, animalInfo, updateAnimalInfo, allAnimals)
       .map(_.withTag("Animals"))
 }
 

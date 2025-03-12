@@ -34,33 +34,36 @@ object AnimalRepository {
         .transact(transactor)
 
     override def find(id: AnimalId): IO[Option[AnimalInfo]] =
-      sql"""select a.id, name, description, val, domesticated_year from animal_info as a
-           left join habitat as h on habitat_id = h.id where name = ${id.toString}"""
-        .query[AnimalInfoRepository]
-        .option
-        .transact[IO](transactor)
-        .map(
-          _.map(info =>
-            AnimalInfo(
-              description = info.description,
-              habitat = info.habitat, // fix me
-              features = List.empty,
-              domesticatedYear = info.domesticatedYear,
-              voice = None
-            )
-          )
+      (for {
+        animalId <- sql"select id from animal_info where name = ${id.toString}".query[Long].unique
+        voices   <- sql"""select voice from voices where animal_id = $animalId""".query[String].to[Vector]
+        animalInfo <- sql"""select a.id, name, description, val, domesticated_year from animal_info as a
+           left join habitat as h on habitat_id = h.id where name = ${id.toString}
+           """.query[AnimalInfoRepository].option
+      } yield animalInfo.map(info =>
+        AnimalInfo(
+          description = info.description,
+          habitat = info.habitat,
+          features = List.empty,
+          domesticatedYear = info.domesticatedYear,
+          voice = Some(voices)
         )
+      )).transact[IO](transactor)
 
-    override def update(id: AnimalId, info: AnimalInfo): IO[AnimalInfo] =
-      sql"""update animal_info set
+    override def update(id: AnimalId, info: AnimalInfo): IO[AnimalInfo] = (for {
+      animalId <- sql"select id from animal_info where name = ${id.toString}".query[Long].unique
+      _        <- sql"""delete from voices where animal_id = $animalId""".update.run
+      _ <- Update[String](s"insert into voices(animal_id, voice) values ($animalId, ?)")
+             .updateMany(info.voice.getOrElse(Vector.empty))
+      _ <- sql"""update animal_info set
             description = ${info.description},
             domesticated_year = ${info.domesticatedYear},
             habitat_id = (select id from habitat where val = ${info.habitat})
             where name = ${id.toString}
-         """
-        .update.run
-        .transact[IO](transactor)
-        .as(info)
+         """.update.run
+    } yield ())
+      .transact[IO](transactor)
+      .as(info)
 
   }
 

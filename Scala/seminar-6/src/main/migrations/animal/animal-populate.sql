@@ -12,15 +12,15 @@ insert into animal_info(id, name, habitat_id, description, domesticated_year) va
 (1, 'rabbit', 0, 'jumpy boi', 600),
 (2, 'shark', 4, 'swimmy boi', null);
 
-insert into voices(id, animal_id, voice) values
-      (0,1,'purrr'),
-      (1,1,'thump'),
-      (2,1,'grrrrrrrrrr'),
-      (3,1,'oink'),
-      (4,1,'nurf'),
-      (5,2,'ahhh'),
-      (6,2,'ehh'),
-      (7,2,'arara');
+insert into voices(animal_id, voice) values
+      (1,'purrr'),
+      (1,'thump'),
+      (1,'grrrrrrrrrr'),
+      (1,'oink'),
+      (1,'nurf'),
+      (2,'ahhh'),
+      (2,'ehh'),
+      (2,'arara');
 
 insert into features(id, feature) values
 (0, 'long ears'),

@@ -117,3 +117,21 @@ lazy val `seminar-5` = project
     libraryDependencies ++= deps ++ dbDeps
   )
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
+lazy val `seminar-6` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
+lazy val seminars = (project in file(".")).settings(
+  name := "seminars"
+).aggregate(
+  `seminar-1`,
+  `seminar-2`,
+  `seminar-3`,
+  `seminar-4`,
+  `seminar-4-it`,
+  `seminar-5`,
+  `seminar-6`
+)

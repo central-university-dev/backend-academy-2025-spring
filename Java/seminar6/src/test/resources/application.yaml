@@ -1,0 +1,4 @@
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG
+    org.springframework.transaction: TRACE

@@ -1,0 +1,12 @@
+spring:
+    datasource:
+        url: jdbc:postgresql://localhost:5432/test
+        username: test
+        password: test
+    sql:
+        init:
+            mode: always
+    docker:
+        compose:
+            enabled: true
+            file: "classpath:/docker-compose.yaml"

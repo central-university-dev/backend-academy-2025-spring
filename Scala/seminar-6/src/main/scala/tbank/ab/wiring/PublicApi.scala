@@ -13,7 +13,7 @@ final class PublicApi(
   habitatController: Controller[IO],
   chatController: Controller[IO]
 ) extends Controller[IO] {
-  
+
   override def endpoints: List[ServerEndpoint[Fs2Streams[IO] & WebSockets, IO]] =
     authController.endpoints ++
     animalController.endpoints ++

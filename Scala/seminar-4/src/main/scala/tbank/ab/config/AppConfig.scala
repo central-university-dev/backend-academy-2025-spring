@@ -1,9 +1,9 @@
 package tbank.ab.config
 
 import cats.effect.IO
+import pureconfig.{ConfigObjectSource, ConfigReader, ConfigSource}
 import pureconfig.ConfigConvert.catchReadError
 import pureconfig.configurable.genericMapReader
-import pureconfig.{ConfigObjectSource, ConfigReader, ConfigSource}
 import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
 
 final case class AppConfig(

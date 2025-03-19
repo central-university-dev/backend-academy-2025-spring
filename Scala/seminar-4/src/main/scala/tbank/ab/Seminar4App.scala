@@ -1,7 +1,7 @@
 package tbank.ab
 
-import cats.effect.kernel.Resource
 import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.kernel.Resource
 import com.comcast.ip4s.Port
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.{Router, Server}

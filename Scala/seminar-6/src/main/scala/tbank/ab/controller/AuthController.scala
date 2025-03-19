@@ -25,9 +25,7 @@ private class AuthController(
   private val tokenAuth =
     AuthEndpoints.tokenAuth
       .serverSecurityLogic(authenticate)
-      .serverLogicSuccess { userpass => _ =>
-        authService.generateToken(userpass)
-      }
+      .serverLogicSuccess(userpass => _ => authService.generateToken(userpass))
 
   private val cookieAuth =
     AuthEndpoints.cookieAuth

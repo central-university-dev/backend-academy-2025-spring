@@ -16,8 +16,7 @@ trait AuthService[F[_]]:
 
 object AuthService:
 
-  final private class Impl(repo: AuthRepository[IO], config: AuthConfig)
-      extends AuthService[IO]:
+  final private class Impl(repo: AuthRepository[IO], config: AuthConfig) extends AuthService[IO]:
     override def login(
       userpass: UsernamePassword
     ): IO[Either[AuthError, Unit]] =

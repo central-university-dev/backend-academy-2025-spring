@@ -12,7 +12,7 @@ import tbank.ab.wiring.{Repositories, Services}
 object Main extends IOApp:
   override def run(args: List[String]): IO[ExitCode] =
     for {
-      config <- AppConfig.load
+      config       <- AppConfig.load
       repositories <- Repositories.make(config)
       services = Services.make(config, repositories)
       endpoints <-
@@ -28,7 +28,7 @@ object Main extends IOApp:
         }
 
       routes = Http4sServerInterpreter[IO]()
-        .toRoutes(endpoints)
+                 .toRoutes(endpoints)
 
       port <- getPortSafe(config.port)
       _ <-

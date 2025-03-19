@@ -2,8 +2,8 @@ package tbank.ab.controller.endpoints
 
 import cats.effect.IO
 import sttp.capabilities.fs2.Fs2Streams
-import sttp.model.headers.CookieValueWithMeta
 import sttp.model.{HeaderNames, StatusCode}
+import sttp.model.headers.CookieValueWithMeta
 import sttp.tapir.*
 import tbank.ab.domain.animal.AnimalId
 import tbank.ab.domain.auth.AccessToken

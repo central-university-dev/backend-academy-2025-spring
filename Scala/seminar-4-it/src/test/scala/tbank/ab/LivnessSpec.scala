@@ -5,7 +5,7 @@ import cats.syntax.traverse.*
 import org.mockserver.matchers.Times
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
-import sttp.client3.{SttpBackend, basicRequest}
+import sttp.client3.{basicRequest, SttpBackend}
 import sttp.model.Uri
 import weaver.*
 

@@ -21,7 +21,7 @@ object animal {
     habitat: Habitat,
     features: List[String],
     domesticatedYear: Option[Int],
-    voice: Option[Vector[String]],
+    voice: Option[Vector[String]]
   ) derives ConfigReader,
         Schema,
         JsonReader,

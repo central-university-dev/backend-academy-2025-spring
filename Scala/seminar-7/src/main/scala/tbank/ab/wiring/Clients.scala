@@ -1,10 +1,10 @@
 package tbank.ab.wiring
 
 import cats.effect.{IO, Resource}
+import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.codecs.Codecs
 import dev.profunktor.redis4cats.data.*
 import dev.profunktor.redis4cats.effect.Log.NoOp.instance
-import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import fs2.aws.s3.S3
 import io.laserdisc.pure.s3.tagless.Interpreter
 import io.lettuce.core.{ClientOptions, TimeoutOptions}

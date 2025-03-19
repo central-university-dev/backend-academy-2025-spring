@@ -1,7 +1,7 @@
 package tbank.ab
 
-import cats.effect.kernel.Resource
 import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.kernel.Resource
 import pureconfig.ConfigSource
 import tbank.ab.config.{AppConfig, DbConfig, ServerConfig}
 import tbank.ab.db.DatabaseModule
@@ -28,7 +28,7 @@ object Seminar6App extends IOApp {
 
       // Connect to db
       given DatabaseModule = DatabaseModule.make
-      _                    <- LiquibaseMigration.run().toResource
+      _ <- LiquibaseMigration.run().toResource
 
       // Create wiring
       given Repositories <- Repositories.make.toResource

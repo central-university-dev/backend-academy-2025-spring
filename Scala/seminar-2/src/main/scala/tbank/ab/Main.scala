@@ -6,12 +6,7 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import tbank.ab.config.AppConfig
-import tbank.ab.controller.{
-  AnimalController,
-  AuthController,
-  HabitatController,
-  ProbeController
-}
+import tbank.ab.controller.{AnimalController, AuthController, HabitatController, ProbeController}
 import tbank.ab.wiring.{Repositories, Services}
 
 object Main extends IOApp:

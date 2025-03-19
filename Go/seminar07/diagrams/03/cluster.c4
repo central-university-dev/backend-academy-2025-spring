@@ -1,0 +1,164 @@
+specification {
+  element case {
+    style {
+      color muted
+      opacity 10%
+    }
+  }
+  element unit {
+    style {
+      color muted
+      opacity 30%
+    }
+  }
+  element application {
+    style {
+      multiple true
+    }
+  }
+  element cache {
+    style {
+      shape storage
+      color green
+      icon tech:redis
+    }
+  }
+}
+
+model {
+  appRequestsData = case {
+    title 'запрос данных из приложения'
+    description 'приложение обращается
+    ко всем нодам кластера'
+
+    app = application
+
+    cluster = unit {
+      primary = cache {
+        style {
+          multiple true
+        }
+      }
+
+      secondary = cache {
+        style {
+          multiple true
+          color amber
+        }
+      }
+    }
+
+    app -> cluster.primary
+    app -> cluster.secondary
+  }
+
+  storageLayout = case {
+    title 'хранение данных'
+    description 'несколько ведущих нод
+    на каждой своя порция
+    всех данных'
+
+    cluster = unit {
+      primary1 = cache {
+        description 'диапазон 1'
+      }
+      primary2 = cache {
+        description 'диапазон 2'
+      }
+      primary3 = cache {
+        description 'диапазон 3'
+      }
+
+      secondary1 = cache {
+        style {
+          color amber
+        }
+        description 'диапазон 1'
+      }
+      secondary2 = cache {
+        style {
+          color amber
+        }
+        description 'диапазон 2'
+      }
+      secondary3 = cache {
+        style {
+          color amber
+        }
+        description 'диапазон 2'
+      }
+
+      primary1 -> secondary1
+      primary2 -> secondary2
+      primary3 -> secondary3
+    }
+  }
+
+  clusterBus = unit {
+    title 'cluster bus'
+    description 'все ноды кластера
+    попарно общаются
+    друг с дружкой'
+
+    cluster = unit {
+      primary1 = cache {
+        style {
+          multiple true
+        }
+        title 'primary'
+      }
+      primary2 = cache {
+        style {
+          multiple true
+        }
+        title 'primary'
+      }
+
+      secondary1 = cache {
+        style {
+          color amber
+          multiple true
+        }
+        title 'secondary'
+      }
+      secondary2 = cache {
+        style {
+          color amber
+          multiple true
+        }
+        title 'secondary'
+      }
+
+      primary1 -> primary2
+      secondary1 -> secondary2
+      primary1 -> secondary1
+      primary2 -> secondary2
+    }
+  }
+
+}
+
+views {
+
+  view index {
+    title 'Landscape view'
+
+    include *
+  }
+
+  view of appRequestsData {
+    include *
+    include cluster.*
+  }
+
+  view of storageLayout {
+    include *
+    include cluster.*
+  }
+
+  view of clusterBus {
+    include *
+    include cluster.*
+  }
+
+}

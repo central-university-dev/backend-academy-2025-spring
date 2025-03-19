@@ -1,0 +1,75 @@
+specification {
+  element unit {
+    style {
+      color muted
+      opacity 20%
+    }
+  }
+  element application {
+    style {
+      multiple true
+    }
+  }
+  element cache {
+    style {
+      shape storage
+      color green
+      icon tech:redis
+    }
+  }
+  element witness {
+    style {
+      color sky
+      size small
+      multiple true
+    }
+  }
+}
+
+model {
+
+  app = application
+
+  sentinel = witness {
+    description 'хранит статусы нод
+    управляет нодами'
+  }
+
+  cache_nodes = unit {
+    title 'ноды кэша'
+
+    primary = cache
+
+    secondary = cache {
+      style {
+        multiple true
+      }
+    }
+
+    primary -> secondary 'изменения данных'
+  }
+
+  app -> sentinel 'узнаёт какая нода primary'
+  sentinel -> cache_nodes.primary
+  sentinel -> cache_nodes.secondary
+
+  app -> cache_nodes.primary 'запросы к данным'
+
+}
+
+views {
+
+   view index {
+
+    title 'Landscape view'
+
+    autoLayout LeftRight
+    include *
+  }
+
+  view of cache_nodes {
+    include *
+    include sentinel
+  }
+
+}

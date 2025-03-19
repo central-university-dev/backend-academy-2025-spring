@@ -1,0 +1,38 @@
+specification {
+  element application {
+    style {
+      multiple true
+    }
+  }
+  element cache {
+    style {
+      shape storage
+      color green
+      icon tech:redis
+    }
+  }
+}
+
+model {
+
+  app = application
+  cache = cache {
+    title 'Standalone'
+    description 'данные хранятся
+    в оперативной памяти
+    одного узла (одной ноды)'
+  }
+
+  app -> cache
+
+}
+
+views {
+
+   view index {
+    title 'Landscape view'
+
+    include *
+  }
+
+}

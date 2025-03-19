@@ -103,3 +103,6 @@ Reading messages... (press Ctrl-C to quit or any key to type command)
 
 [Примеры кода на golang](https://github.com/redis/go-redis/blob/master/example_test.go#L531).
 
+Расширение функциональности PUB/SUB — [redis streams](https://redis.io/docs/latest/develop/data-types/streams/). В отличие от канала, состояние стрима хранится в каком-то объёме в памяти ноды (или нод кластера). Можно подключаться к стриму с выбором позиции и читать данные, опубликованные раньше.
+
+[Статья на хабре](https://habr.com/ru/articles/456270/), в которой объясняется работа с redis streams с примерами.

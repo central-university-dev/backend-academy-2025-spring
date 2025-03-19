@@ -23,6 +23,10 @@ specification {
       icon tech:redis
     }
   }
+
+  relationship doubleEnd {
+    tail normal
+  }
 }
 
 model {
@@ -85,7 +89,7 @@ model {
         style {
           color amber
         }
-        description 'диапазон 2'
+        description 'диапазон 3'
       }
 
       primary1 -> secondary1
@@ -101,27 +105,14 @@ model {
     друг с дружкой'
 
     cluster = unit {
-      primary1 = cache {
-        style {
-          multiple true
-        }
-        title 'primary'
-      }
-      primary2 = cache {
+      primary = cache {
         style {
           multiple true
         }
         title 'primary'
       }
 
-      secondary1 = cache {
-        style {
-          color amber
-          multiple true
-        }
-        title 'secondary'
-      }
-      secondary2 = cache {
+      secondary = cache {
         style {
           color amber
           multiple true
@@ -129,10 +120,11 @@ model {
         title 'secondary'
       }
 
-      primary1 -> primary2
-      secondary1 -> secondary2
-      primary1 -> secondary1
-      primary2 -> secondary2
+      primary .doubleEnd secondary {
+        title 'ноды обмениваются
+
+        сообщениями попарно'
+      }
     }
   }
 

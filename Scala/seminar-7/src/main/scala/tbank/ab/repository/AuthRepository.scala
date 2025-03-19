@@ -1,6 +1,8 @@
 package tbank.ab.repository
 
 import cats.effect.{IO, Ref}
+import dev.profunktor.redis4cats.Redis
+import dev.profunktor.redis4cats.RedisCommands
 import tbank.ab.config.{AppConfig, AuthConfig}
 import tbank.ab.domain.auth.{AccessToken, TokenInfo}
 
@@ -12,16 +14,15 @@ trait AuthRepository[F[_]] {
 }
 
 object AuthRepository {
-  final private class InMemory(
-    repo: Ref[IO, Map[AccessToken, TokenInfo]],
+  final private class RedisImpl(
+    repo: RedisCommands[IO, AccessToken, TokenInfo],
     config: AuthConfig
   ) extends AuthRepository[IO] {
 
     override def find(token: AccessToken): IO[Option[AccessToken]] =
       for {
-        r <- repo.get
-        tokenInfo = r.get(token)
-        now       = Instant.now()
+        tokenInfo <- repo.get(token)
+        now = Instant.now()
       } yield Option.when(
         tokenInfo.exists(_.expiresIn.isAfter(now))
       )(token)
@@ -30,11 +31,10 @@ object AuthRepository {
       for {
         now <- IO.pure(Instant.now())
         expiresIn = now.plusSeconds(config.maxAge)
-        _ <- repo.update(map => map.updated(token, TokenInfo(expiresIn)))
+        _ <- repo.set(token, TokenInfo(expiresIn))
       } yield ()
   }
 
-  def make(using config: AuthConfig): IO[AuthRepository[IO]] =
-    Ref.of[IO, Map[AccessToken, TokenInfo]](Map.empty)
-      .map(InMemory(_, config))
+  def make(using config: AuthConfig, repo: RedisCommands[IO, AccessToken, TokenInfo]): AuthRepository[IO] =
+    RedisImpl(repo, config)
 }

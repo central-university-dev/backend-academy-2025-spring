@@ -47,7 +47,9 @@ object HttpServer {
 
   private def logZoneUri(zone: String, server: Server, conf: ZoneConfig): IO[Unit] =
     IO.println(s"$zone zone started at ${server.baseUri.renderString}") >>
-    IO.whenA(conf.swaggerEnabled)(IO.println(s"SSwagger UI for $zone zone available at ${server.baseUri.renderString}/docs"))
+    IO.whenA(conf.swaggerEnabled)(
+      IO.println(s"SSwagger UI for $zone zone available at ${server.baseUri.renderString}/docs")
+    )
 
   def startServer(using
     publicApi: PublicApi,

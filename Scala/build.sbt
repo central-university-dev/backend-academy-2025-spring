@@ -75,7 +75,7 @@ val dbDeps: List[ModuleID] = List(
 )
 
 val nosqlDeps: List[ModuleID] = List(
-  "dev.profunktor" %% "redis4cats-streams" % `redis4cats-version`,
+  "dev.profunktor" %% "redis4cats-effects" % `redis4cats-version`,
   "io.laserdisc"   %% "fs2-aws-s3"         % `fs2-aws-version`
 )
 

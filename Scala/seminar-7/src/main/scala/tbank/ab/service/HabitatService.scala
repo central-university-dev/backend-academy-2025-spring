@@ -25,15 +25,22 @@ object HabitatService {
   ) extends HabitatService[IO] {
 
     override def findImage(animalId: AnimalId): IO[Option[Array[Byte]]] =
-      NonEmptyString.from(animalId.toString) match {
-        case Right(key) => s3Client.readFile(config.bucket, FileKey(key)).compile.toVector.map(_.toArray.some)
-        case Left(key)  => IO.none
+      NonEmptyString.from(s"${animalId.toString}.jpg") match {
+        case Right(key) =>
+          s3Client.readFile(config.bucket, FileKey(key))
+            .compile.toVector.map(_.toArray)
+            .attempt.map(_.toOption)
+        case Left(key) => IO.none
       }
 
     override def uploadImage(
       animalId: AnimalId,
       image: Stream[IO, Byte]
-    ): IO[Either[UploadError, Unit]] = ???
+    ): IO[Either[UploadError, Unit]] =
+      NonEmptyString.from(s"${animalId.toString}.jpg") match {
+        case Right(key) => image.through(s3Client.uploadFile(config.bucket, FileKey(key))).compile.drain.map(Right(_))
+        case Left(_)    => IO.pure(Left(UploadError()))
+      }
 
   }
 

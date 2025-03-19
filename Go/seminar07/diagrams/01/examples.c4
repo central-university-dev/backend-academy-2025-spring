@@ -1,0 +1,92 @@
+specification {
+  element example {
+    style {
+      color muted
+      opacity 20%
+    }
+  }
+  element application
+  element service
+  element database {
+    style {
+      shape storage
+      color amber
+      icon tech:postgresql
+    }
+  }
+  element cache {
+    style {
+      shape storage
+      size small
+      color green
+    }
+  }
+}
+
+model {
+
+  ex1 = example 'пример 1' {
+    description 'in-app cache'
+
+    app = application 'приложение' {
+      cache = cache 'кэш'
+    }
+
+    service = service 'Внешний сервис' {
+      description 'например, API или DNS'
+    }
+
+    app -> service
+  }
+
+  ex2 = example 'пример 2' {
+    description 'in-app cache'
+
+    app = application 'приложение' {
+      cache = cache 'кэш'
+    }
+
+    db = database 'Основное хранилище'
+
+    app -> db
+  }
+
+  ex3 = example 'пример 3' {
+    description 'sidecar cache'
+
+    app = application 'приложение'
+    db = database 'Основное хранилище'
+    cache = cache 'Кэш' {
+      style {
+        icon tech:redis
+      }
+    }
+
+    app -> cache
+    app -> db
+  }
+}
+
+views {
+
+   view index {
+    title 'Landscape view'
+
+    include *
+  }
+
+  view of ex1 {
+    include *
+    include app.cache
+  }
+
+  view of ex2 {
+    include *
+    include app.cache
+  }
+
+  view of ex3 {
+    include *
+  }
+
+}

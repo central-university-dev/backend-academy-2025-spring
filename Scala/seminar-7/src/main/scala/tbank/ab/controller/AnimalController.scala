@@ -12,12 +12,10 @@ private class AnimalController(
   animalService: AnimalService[IO],
   authService: AuthService[IO]
 ) extends Controller[IO] {
-  
+
   private val allAnimals: ServerEndpoint[Fs2Streams[IO], IO] =
     AnimalEndpoints.allAnimals
-      .serverLogicSuccessPure {_ =>
-        animalService.allAnimals
-      }
+      .serverLogicSuccessPure(_ => animalService.allAnimals)
 
   private val animalDescription: ServerEndpoint[Any, IO] =
     AnimalEndpoints.animalDescription

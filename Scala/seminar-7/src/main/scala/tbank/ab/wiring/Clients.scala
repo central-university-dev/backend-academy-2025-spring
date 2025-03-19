@@ -1,17 +1,32 @@
 package tbank.ab.wiring
 
 import cats.effect.{IO, Resource}
+import dev.profunktor.redis4cats.Redis
+import dev.profunktor.redis4cats.RedisCommands
+import dev.profunktor.redis4cats.codecs.Codecs
+import dev.profunktor.redis4cats.codecs.splits._
+import dev.profunktor.redis4cats.connection.RedisClient
+import dev.profunktor.redis4cats.data._
+import dev.profunktor.redis4cats.effect.Log.NoOp.instance
+import fs2.Stream
 import fs2.aws.s3.S3
 import io.laserdisc.pure.s3.tagless.{Interpreter, S3AsyncClientOp}
+import io.lettuce.core.ClientOptions
+import io.lettuce.core.TimeoutOptions
+import io.lettuce.core.protocol.RedisCommand
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
-import tbank.ab.config.{AppConfig, S3Config}
+import tbank.ab.config.{AppConfig, RedisConfig, S3Config}
+import tbank.ab.domain.auth.AccessToken
+import tbank.ab.domain.auth.TokenInfo
 
 import java.net.URI
+import java.time.Duration
 
 case class Clients()(using
-  val s3Client: S3[IO]
+  val s3Client: S3[IO],
+  val redisClient: RedisCommands[IO, AccessToken, TokenInfo]
 )
 
 object Clients {
@@ -22,17 +37,36 @@ object Clients {
     Interpreter[IO].S3AsyncClientOpResource(
       S3AsyncClient
         .builder()
+        .forcePathStyle(true)
         .credentialsProvider(StaticCredentialsProvider.create(credentials))
         .endpointOverride(URI.create(s3Config.uri))
         .region(Region.US_EAST_1)
     ).map(S3.create[IO](_))
   }
 
+  private def redisResource(using redisConfig: RedisConfig): Resource[IO, RedisCommands[IO, AccessToken, TokenInfo]] = {
+    val clientOptions = ClientOptions.builder()
+      .autoReconnect(false)
+      .pingBeforeActivateConnection(true)
+      .timeoutOptions(
+        TimeoutOptions.builder()
+          .fixedTimeout(Duration.ofSeconds(10))
+          .build()
+      )
+      .build()
+
+    val redisCodec: RedisCodec[AccessToken, TokenInfo] =
+      Codecs.derive(RedisCodec.Utf8, AccessToken.stringAccessTokenEpi, TokenInfo.stringTokenInfoEpi)
+
+    Redis[IO].withOptions(redisConfig.uri, clientOptions, redisCodec)
+  }
+
   def make(using config: AppConfig): Resource[IO, Clients] = {
     import config.given
 
     for {
-      given S3[IO] <- s3StreamResource
+      given S3[IO]                                    <- s3StreamResource
+      given RedisCommands[IO, AccessToken, TokenInfo] <- redisResource
     } yield Clients()
   }
 }

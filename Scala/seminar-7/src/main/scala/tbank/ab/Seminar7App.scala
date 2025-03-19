@@ -30,8 +30,8 @@ object Seminar7App extends IOApp {
       _ <- LiquibaseMigration.run().toResource
 
       // Create wiring
-      given Repositories <- Repositories.make.toResource
       given Clients      <- Clients.make
+      given Repositories <- Repositories.make.toResource
       given Services      = Services.make
       given MonitoringApi = MonitoringApi.make
       given PublicApi     = PublicApi.make

@@ -1,4 +1,10 @@
 services:
+  redis:
+    image: redis:7.4
+    restart: always
+    ports:
+      - '6379:6379'
+
   minio:
     image: minio/minio
     ports:
@@ -6,7 +12,7 @@ services:
       - "9001:9001"
     environment:
       - "MINIO_ROOT_USER=dummy"
-      - "MINIO_ROOT_PASSWORD=dummy"
+      - "MINIO_ROOT_PASSWORD=dummy1234"
     command: server /data --console-address ":9001"
 
   createbuckets:
@@ -14,15 +20,9 @@ services:
     depends_on:
       - minio
     entrypoint: >
-      /bin/sh -c "
-      sleep 10;
-      mc alias set myminio http://minio:9000 dummy dummy --api S3v4;
-      mc mb myminio/my-pet-service;
-      mc cp rabbit.jpg myminio/my-pet-service;
-      exit 0;
-      "
+      /bin/sh -c " sleep 10; mc alias set myminio http://minio:9000 dummy dummy1234 --api S3v4; mc mb myminio/my-pet-service; mc cp rabbit.jpg myminio/my-pet-service; exit 0; "
     volumes:
-      - ./../images/rabbit.jpg:/data/rabbit.jpg
+      - ./../images/rabbit.jpg:/rabbit.jpg
 
   my-pet-service:
     depends_on:

@@ -11,11 +11,12 @@ final case class Repositories()(using
 )
 
 object Repositories:
-  def make(using db: DatabaseModule, config: AppConfig): IO[Repositories] = {
+  def make(using db: DatabaseModule, config: AppConfig, clients: Clients): IO[Repositories] = {
     import config.given
+    import clients.given
 
     for {
       given AnimalRepository[IO] <- IO(AnimalRepository.make)
-      given AuthRepository[IO]   <- AuthRepository.make
+      given AuthRepository[IO] = AuthRepository.make
     } yield Repositories()
   }

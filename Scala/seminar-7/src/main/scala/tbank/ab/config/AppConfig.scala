@@ -11,7 +11,8 @@ final case class AppConfig()(using
   val auth: AuthConfig,
   val animals: Map[AnimalId, AnimalInfo],
   val database: DbConfig,
-  val s3: S3Config
+  val s3: S3Config,
+  val redis: RedisConfig
 )
 
 object AppConfig {
@@ -20,7 +21,8 @@ object AppConfig {
     auth: AuthConfig,
     animals: Map[AnimalId, AnimalInfo],
     database: DbConfig,
-    s3: S3Config
+    s3: S3Config,
+    redis: RedisConfig
   ) derives ConfigReader
 
   def load(source: ConfigSource): IO[AppConfig] =
@@ -31,7 +33,8 @@ object AppConfig {
           auth = view.auth,
           animals = view.animals,
           database = view.database,
-          s3 = view.s3
+          s3 = view.s3,
+          redis = view.redis
         )
       )
 

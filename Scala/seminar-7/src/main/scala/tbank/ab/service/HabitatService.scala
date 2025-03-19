@@ -24,12 +24,12 @@ object HabitatService {
     config: S3Config
   ) extends HabitatService[IO] {
 
-    override def findImage(animalId: AnimalId): IO[Option[Array[Byte]]] =
+    override def findImage(animalId: AnimalId): IO[Option[Array[Byte]]] = // TODO: Fix to stream
       NonEmptyString.from(s"${animalId.toString}.jpg") match {
         case Right(key) =>
           s3Client.readFile(config.bucket, FileKey(key))
-            .compile.toVector.map(_.toArray)
-            .attempt.map(_.toOption)
+            .compile.toVector.map(_.toArray) // TODO: Fix toArray
+            .attempt.map(_.toOption)         // TODO: Make error handling
         case Left(key) => IO.none
       }
 

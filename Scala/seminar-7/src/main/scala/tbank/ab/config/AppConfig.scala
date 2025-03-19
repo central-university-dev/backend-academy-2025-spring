@@ -1,15 +1,11 @@
 package tbank.ab.config
 
 import cats.effect.IO
-import pureconfig.{ConfigObjectSource, ConfigReader, ConfigSource}
-import pureconfig.ConfigConvert.catchReadError
-import pureconfig.configurable.genericMapReader
-import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
+import pureconfig.{ConfigReader, ConfigSource}
 
 final case class AppConfig()(using
   val server: ServerConfig,
   val auth: AuthConfig,
-  val animals: Map[AnimalId, AnimalInfo],
   val database: DbConfig,
   val s3: S3Config,
   val redis: RedisConfig
@@ -19,7 +15,6 @@ object AppConfig {
   private case class AppConfigView(
     server: ServerConfig,
     auth: AuthConfig,
-    animals: Map[AnimalId, AnimalInfo],
     database: DbConfig,
     s3: S3Config,
     redis: RedisConfig
@@ -31,15 +26,9 @@ object AppConfig {
         AppConfig()(using
           server = view.server,
           auth = view.auth,
-          animals = view.animals,
           database = view.database,
           s3 = view.s3,
           redis = view.redis
         )
       )
-
-  given ConfigReader[Map[AnimalId, AnimalInfo]] =
-    genericMapReader[AnimalId, AnimalInfo](
-      catchReadError[AnimalId](id => AnimalId(id))
-    )
 }

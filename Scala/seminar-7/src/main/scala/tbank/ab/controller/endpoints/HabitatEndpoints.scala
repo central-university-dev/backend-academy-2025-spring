@@ -2,8 +2,8 @@ package tbank.ab.controller.endpoints
 
 import cats.effect.IO
 import sttp.capabilities.fs2.Fs2Streams
-import sttp.model.{HeaderNames, StatusCode}
 import sttp.model.headers.CookieValueWithMeta
+import sttp.model.{HeaderNames, StatusCode}
 import sttp.tapir.*
 import tbank.ab.domain.animal.AnimalId
 import tbank.ab.domain.auth.AccessToken
@@ -21,7 +21,7 @@ object HabitatEndpoints {
       .in("habitat" / "image")
       .in(query[AnimalId]("animal-id"))
       .out(
-        byteArrayBody
+        byteArrayBody // TODO: Fix to stream
           .and(header[String](HeaderNames.ContentDisposition))
           .and(header(HeaderNames.Accept, "image/jpeg"))
       )

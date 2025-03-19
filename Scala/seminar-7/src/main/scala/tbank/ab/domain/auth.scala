@@ -15,7 +15,7 @@ object auth {
 
     given (using c: Codec.PlainCodec[String]): Codec.PlainCodec[AccessToken] = c
 
-    val stringAccessTokenEpi: SplitEpi[String, AccessToken] = SplitEpi(AccessToken(_), _.value)
+    val stringAccessTokenEpi: SplitEpi[String, AccessToken] = SplitEpi(AccessToken(_), identity)
   }
 
   final case class TokenInfo(
@@ -23,12 +23,10 @@ object auth {
   )
 
   object TokenInfo {
+    val stringTokenInfoEpi: SplitEpi[String, TokenInfo] = SplitEpi(TokenInfo.deserialize, serialize)
 
-    def deserialize(expiresIn: String): TokenInfo = TokenInfo(Instant.ofEpochMilli(expiresIn.toLong))
-
-    extension (tokenInfo: TokenInfo) def serialize: String = tokenInfo.expiresIn.toEpochMilli().toString()
-
-    val stringTokenInfoEpi: SplitEpi[String, TokenInfo] = SplitEpi(TokenInfo.deserialize(_), _.serialize)
+    private def deserialize(expiresIn: String): TokenInfo = TokenInfo(Instant.ofEpochMilli(expiresIn.toLong))
+    private def serialize(tokenInfo: TokenInfo): String   = tokenInfo.expiresIn.toEpochMilli.toString
   }
 
   object error {

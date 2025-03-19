@@ -1,6 +1,6 @@
 package tbank.ab.domain
 
-import doobie.{Get, Put, Read}
+import doobie.{Get, Put}
 import pureconfig.ConfigReader
 import sttp.tapir.{Codec, Schema}
 import sttp.tapir.Codec.PlainCodec

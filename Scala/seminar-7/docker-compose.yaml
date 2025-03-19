@@ -1,4 +1,14 @@
 services:
+# TODO: use same env var in services and in application.conf
+  postgres:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+
   redis:
     image: redis:7.4
     restart: always
@@ -11,8 +21,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      - "MINIO_ROOT_USER=dummy"
-      - "MINIO_ROOT_PASSWORD=dummy1234"
+      MINIO_ROOT_USER: dummy
+      MINIO_ROOT_PASSWORD: dummy1234
     command: server /data --console-address ":9001"
 
   createbuckets:
@@ -28,6 +38,8 @@ services:
     depends_on:
       - minio
       - createbuckets
+      - redis
+      - postgres
     image: tbank-ab:0.1.0-SNAPSHOT
     ports:
       - "8080:8080"

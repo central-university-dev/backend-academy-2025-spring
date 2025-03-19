@@ -13,9 +13,9 @@ final case class Services()(using
 
 object Services:
   def make(using config: AppConfig, repos: Repositories, clients: Clients): Services = {
-    import repos.given
     import clients.given
     import config.given
+    import repos.given
 
     given AnimalService[IO]  = AnimalService.make
     given AuthService[IO]    = AuthService.make

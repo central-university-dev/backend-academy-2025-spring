@@ -13,7 +13,6 @@ object animal {
 
     given (using c: Codec.PlainCodec[String]): Codec.PlainCodec[AnimalId] = c
     given (using s: Schema[String]): Schema[AnimalId]                     = s
-    given (using c: ConfigReader[String]): ConfigReader[AnimalId]         = c
     given (using jr: JsonReader[String]): JsonReader[AnimalId]            = jr
     given (using jw: JsonWriter[String]): JsonWriter[AnimalId]            = jw
 
@@ -23,8 +22,7 @@ object animal {
     features: List[String],
     domesticatedYear: Option[Int],
     voice: Option[Vector[String]]
-  ) derives ConfigReader,
-        Schema,
+  ) derives Schema,
         JsonReader,
         JsonWriter
 }

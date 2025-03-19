@@ -5,6 +5,8 @@ import fs2.{Chunk, Stream}
 import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
 import tbank.ab.repository.AnimalRepository
 
+import java.nio.charset.StandardCharsets
+
 trait AnimalService[F[_]] {
   def allAnimals: fs2.Stream[F, Byte]
   def animalDescription(id: AnimalId): F[Option[String]]
@@ -19,9 +21,13 @@ object AnimalService {
 
   final private class Impl(repo: AnimalRepository[IO]) extends AnimalService[IO] {
     override def allAnimals: Stream[IO, Byte] =
-      Stream.chunk(Chunk.from("[".getBytes)) ++
-      repo.getAll.flatMap(id => Stream.chunk(Chunk.from(s""""${id.toString}",""".getBytes))).dropLast ++
-      Stream.chunk(Chunk.from("]".getBytes))
+      strToStream("[") ++
+      repo.getAll
+        .map(_.toString)
+        .map(i => s""""$i",""")
+        .flatMap(strToStream)
+        .dropLast ++ // TODO: Fix dropLast (byte != Char)
+      strToStream("]")
 
     override def animalDescription(id: AnimalId): IO[Option[String]] =
       repo.find(id)
@@ -37,5 +43,8 @@ object AnimalService {
       repo.update(id, info)
 
   }
+
+  private def strToStream(str: String): Stream[IO, Byte] =
+    Stream.chunk(Chunk.from(str.getBytes(StandardCharsets.UTF_8)))
 
 }

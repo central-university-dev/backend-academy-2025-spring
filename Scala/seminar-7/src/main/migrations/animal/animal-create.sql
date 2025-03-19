@@ -9,7 +9,7 @@ create table if not exists habitat (
 );
 
 create table if not exists animal_info (
-    id int auto_increment primary key,
+    id serial primary key,
     name varchar not null,
     description varchar not null,
     habitat_id int not null,
@@ -18,14 +18,14 @@ create table if not exists animal_info (
 );
 
 create table if not exists voices (
-    id int auto_increment primary key,
+    id serial primary key,
     animal_id int not null,
     voice varchar not null,
     constraint FK_voices_animal_info foreign key (animal_id) REFERENCES animal_info (id)
 );
 
 create table if not exists features (
-    id int auto_increment primary key,
+    id serial primary key,
     feature varchar not null
 );
 

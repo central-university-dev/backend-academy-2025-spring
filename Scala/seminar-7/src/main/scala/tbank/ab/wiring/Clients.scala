@@ -1,25 +1,18 @@
 package tbank.ab.wiring
 
 import cats.effect.{IO, Resource}
-import dev.profunktor.redis4cats.Redis
-import dev.profunktor.redis4cats.RedisCommands
 import dev.profunktor.redis4cats.codecs.Codecs
-import dev.profunktor.redis4cats.codecs.splits._
-import dev.profunktor.redis4cats.connection.RedisClient
-import dev.profunktor.redis4cats.data._
+import dev.profunktor.redis4cats.data.*
 import dev.profunktor.redis4cats.effect.Log.NoOp.instance
-import fs2.Stream
+import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import fs2.aws.s3.S3
-import io.laserdisc.pure.s3.tagless.{Interpreter, S3AsyncClientOp}
-import io.lettuce.core.ClientOptions
-import io.lettuce.core.TimeoutOptions
-import io.lettuce.core.protocol.RedisCommand
+import io.laserdisc.pure.s3.tagless.Interpreter
+import io.lettuce.core.{ClientOptions, TimeoutOptions}
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import tbank.ab.config.{AppConfig, RedisConfig, S3Config}
-import tbank.ab.domain.auth.AccessToken
-import tbank.ab.domain.auth.TokenInfo
+import tbank.ab.domain.auth.{AccessToken, TokenInfo}
 
 import java.net.URI
 import java.time.Duration

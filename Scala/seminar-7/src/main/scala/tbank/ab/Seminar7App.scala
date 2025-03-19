@@ -1,17 +1,12 @@
 package tbank.ab
 
-import cats.effect.{ExitCode, IO, IOApp}
 import cats.effect.kernel.Resource
+import cats.effect.{ExitCode, IO, IOApp}
 import pureconfig.ConfigSource
 import tbank.ab.config.{AppConfig, DbConfig, ServerConfig}
 import tbank.ab.db.DatabaseModule
 import tbank.ab.wiring.{Clients, HttpServer, MonitoringApi, PublicApi, Repositories, Services}
 
-// docker run --name my-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -e POSTGRES_DB=mydb -d -p 5432:5432 postgres:alpine
-//  driver = "org.postgresql.Driver"
-//  url = "jdbc:postgresql://localhost:5432/mydb"
-//  user = "user"
-//  password = "password"
 object Seminar7App extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     application.useForever

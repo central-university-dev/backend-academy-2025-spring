@@ -14,6 +14,7 @@ import org.apache.zookeeper.ZooKeeper;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.core.KafkaAdmin;
 
 
 @Slf4j
@@ -25,8 +26,16 @@ public class CommonKafkaConfig {
     private final KafkaProperties kafkaProperties;
 
     @Bean
-    Admin localKafkaClusterAdmin() {
+    Admin localKafkaClusterAdminClint() {
         return AdminClient.create(
+            Map.of(
+                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
+                kafkaProperties.getBootstrapServers()));
+    }
+
+    @Bean
+    KafkaAdmin localKafkaClusterAdmin() {
+        return new KafkaAdmin(
             Map.of(
                 AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
                 kafkaProperties.getBootstrapServers()));
@@ -41,9 +50,6 @@ public class CommonKafkaConfig {
     @Bean
     @SneakyThrows
     NewTopic userEventsTopic() {
-        log.info(
-            "Создаем топик {} в локальном кластере Kafka: {}",
-            userEventsTopicProperties.getTopic(), userEventsTopicProperties);
         return userEventsTopicProperties.toNewTopic();
     }
 

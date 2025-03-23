@@ -14,4 +14,6 @@ spring:
 app:
     user-events:
         topic: user-events
-        group-id: ${GROUP_ID:group-1}
+        app-group-id: ${GROUP_ID:group-1}
+        replicas: 2
+        partitions: 3

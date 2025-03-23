@@ -1,5 +1,7 @@
 package backend.academy.kafka.monitor;
 
+import static java.lang.Math.max;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,22 +22,32 @@ public class ZooKeeperMonitor {
     @SneakyThrows
     @EventListener(ApplicationReadyEvent.class)
     public void logZooKeeperState() {
-        traverseZooKeeper("", 0);
+        var description = new StringBuilder();
+        traverseZooKeeper("", description, 0);
+        log.info("Данные в ZooKeeper: \n{}", description);
     }
 
     @SneakyThrows
-    private void traverseZooKeeper(String path, int level) {
+    private void traverseZooKeeper(String path, StringBuilder description, int level) {
         var actualPath = path.isEmpty() ? "/" : path;
-        var children = zooKeeper.getChildren(actualPath, false);
-        for (var child : children) {
-            traverseZooKeeper(path + "/" + child, level + 1);
+
+        description.append("\t".repeat(max(1, level)));
+        var data = Optional.ofNullable(zooKeeper.getData(actualPath, false, new Stat()))
+            .map(String::new)
+            .orElse("");
+        if (!data.isBlank()) {
+            description.append(
+                "- Уровень вложенности: %s, путь: %s, данные: %s\n"
+                    .formatted(level, path, data));
+        } else {
+            description.append(
+                "- Уровень вложенности: %s, путь: %s, промежуточное звено\n"
+                    .formatted(level, path));
         }
 
-        var data = zooKeeper.getData(actualPath, false, new Stat());
-        if (data != null) {
-            log.info("Уровень вложенности: {}, путь: {}, данные: {}", level, path, new String(data));
-        } else {
-            log.info("Уровень вложенности: {}, путь: {}, промежуточное звено", level, path);
+        var children = zooKeeper.getChildren(actualPath, false);
+        for (var child : children) {
+            traverseZooKeeper(path + "/" + child, description, level + 1);
         }
     }
 

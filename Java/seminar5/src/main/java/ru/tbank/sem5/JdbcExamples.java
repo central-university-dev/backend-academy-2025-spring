@@ -2,13 +2,14 @@ package ru.tbank.sem5;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.sql.DataSource;
+
 
 public class JdbcExamples {
 
@@ -99,7 +100,5 @@ public class JdbcExamples {
         connection.createStatement();
         // ...
     }
-
-
 
 }

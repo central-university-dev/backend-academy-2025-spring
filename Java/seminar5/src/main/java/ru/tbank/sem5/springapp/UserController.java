@@ -13,6 +13,7 @@ public class UserController {
 
     @GetMapping
     public List<User> getUsers() {
+        userRepository.transferMoney(1L, 1L, 10);
         return userRepository.getUsers();
     }
 }

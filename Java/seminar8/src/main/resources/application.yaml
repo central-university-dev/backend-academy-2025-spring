@@ -1,0 +1,17 @@
+server.port: 8080
+
+spring:
+    datasource:
+        url: jdbc:postgresql://localhost:5432/users
+        username: admin
+        password: admin
+    kafka:
+        bootstrap-servers: localhost:19092,localhost:29092
+    cloud.zookeeper:
+        config.enabled: false
+        connect-string: localhost:2181
+
+app:
+    user-events:
+        topic: user-events
+        group-id: ${GROUP_ID:group-1}

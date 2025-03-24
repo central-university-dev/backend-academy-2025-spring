@@ -16,6 +16,5 @@ springdoc.swagger-ui.path: /swagger-ui.html
 app:
     user-events:
         topic: user-events
-        app-group-id: ${GROUP_ID:group-1}
-        replicas: 2
         partitions: 3
+        replicas: 2

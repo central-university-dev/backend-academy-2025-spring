@@ -14,7 +14,6 @@ public class UserEventsTopicProperties {
     private String topic;
     private int partitions;
     private short replicas;
-    private String appGroupId;
 
     public NewTopic toNewTopic() {
         return new NewTopic(topic, partitions, replicas);

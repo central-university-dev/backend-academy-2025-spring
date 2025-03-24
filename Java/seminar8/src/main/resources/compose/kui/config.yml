@@ -2,7 +2,7 @@ auth:
   type: DISABLED
 kafka:
   clusters:
-  - bootstrapServers: kafka-1:19092,kafka-2:29092
+  - bootstrapServers: kafka-1:9092,kafka-2:9092
     name: local
     properties: {}
     readOnly: false

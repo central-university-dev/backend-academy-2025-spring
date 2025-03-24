@@ -11,6 +11,8 @@ spring:
         config.enabled: false
         connect-string: localhost:2181
 
+springdoc.swagger-ui.path: /swagger-ui.html
+
 app:
     user-events:
         topic: user-events

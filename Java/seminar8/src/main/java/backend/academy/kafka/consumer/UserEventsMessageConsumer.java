@@ -28,7 +28,8 @@ public class UserEventsMessageConsumer {
         backoff = @Backoff(delay = 3000L, multiplier = 2.0),
         attempts = "2", autoCreateTopics = "false",
         kafkaTemplate = "userEventKafkaTemplate",
-        topicSuffixingStrategy = SUFFIX_WITH_INDEX_VALUE
+        topicSuffixingStrategy = SUFFIX_WITH_INDEX_VALUE,
+        include = RuntimeException.class
     )
     public void consume(ConsumerRecord<Long, UserEvent> record, Acknowledgment acknowledgment) {
         log.info(

@@ -4,6 +4,7 @@ import lombok.Data;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.core.KafkaAdmin;
 
 
 @Data
@@ -15,8 +16,11 @@ public class UserEventsTopicProperties {
     private int partitions;
     private short replicas;
 
-    public NewTopic toNewTopic() {
-        return new NewTopic(topic, partitions, replicas);
+    public KafkaAdmin.NewTopics toNewTopics() {
+        return new KafkaAdmin.NewTopics(
+            new NewTopic(topic, partitions, replicas),
+            new NewTopic(topic + "-retry", partitions, replicas),
+            new NewTopic(topic + "-dlt", partitions, replicas));
     }
 
 }

@@ -57,12 +57,11 @@ public class UserEventsController {
     @SneakyThrows
     private String createRandomEvent(long userId) {
         return objectMapper.writeValueAsString(
-            UserEvent.builder()
-                .userId(userId)
-                .type(ACCRUAL)
-                .createdAt(LocalDateTime.now())
-                .id(idGenerator.incrementAndGet())
-                .build());
+            new UserEvent()
+                .setUserId(userId)
+                .setType(ACCRUAL)
+                .setCreatedAt(LocalDateTime.now())
+                .setId(idGenerator.incrementAndGet()));
     }
 
 }

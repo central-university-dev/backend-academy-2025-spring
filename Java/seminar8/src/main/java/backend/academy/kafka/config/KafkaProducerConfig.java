@@ -1,5 +1,6 @@
 package backend.academy.kafka.config;
 
+import backend.academy.kafka.model.UserEvent;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 
 @Configuration
@@ -52,6 +54,16 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(factory);
     }
 
+    @Bean
+    public KafkaTemplate<Long, UserEvent> userEventKafkaTemplate() {
+        var props = properties.buildProducerProperties(null);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, UserEventSerializer.class);
+        props.put(ProducerConfig.ACKS_CONFIG, "0");
+        var factory = new DefaultKafkaProducerFactory<Long, UserEvent>(props);
+        return new KafkaTemplate<>(factory);
+    }
+
     @Slf4j
     public static class CustomUserPartitioner implements Partitioner {
 
@@ -78,6 +90,10 @@ public class KafkaProducerConfig {
         public void configure(Map<String, ?> configs) {
 
         }
+
+    }
+
+    public static class UserEventSerializer extends JsonSerializer<UserEvent> {
 
     }
 

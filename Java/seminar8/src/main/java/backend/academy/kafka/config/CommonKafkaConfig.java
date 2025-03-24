@@ -9,12 +9,12 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaAdmin.NewTopics;
 
 
 @Slf4j
@@ -49,8 +49,8 @@ public class CommonKafkaConfig {
 
     @Bean
     @SneakyThrows
-    NewTopic userEventsTopic() {
-        return userEventsTopicProperties.toNewTopic();
+    NewTopics userEventsTopic() {
+        return userEventsTopicProperties.toNewTopics();
     }
 
 }

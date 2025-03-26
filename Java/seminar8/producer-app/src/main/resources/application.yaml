@@ -1,0 +1,17 @@
+server.port: 9000
+
+spring:
+    kafka:
+        bootstrap-servers: localhost:19092,localhost:29092
+    cloud.zookeeper:
+        config.enabled: false
+        connect-string: localhost:2181
+
+springdoc.swagger-ui.path: /swagger-ui.html
+
+app:
+    user-events:
+        topic: user-events
+        partitions: 3
+        replicas: 2
+        fail-on-processing: false

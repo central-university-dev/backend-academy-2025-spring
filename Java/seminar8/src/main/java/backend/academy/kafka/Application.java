@@ -23,6 +23,8 @@ public class Application {
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStartup() {
         service.sendMessages(30L, 10, true, false);
+        service.sendMessages(31L, 10, true, false);
+        service.sendMessages(32L, 10, true, false);
     }
 
     public static void main(String[] args) {

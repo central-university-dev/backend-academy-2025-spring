@@ -13,14 +13,6 @@ import org.springframework.kafka.core.KafkaAdmin;
 public class UserEventsTopicProperties {
 
     private String topic;
-    private int partitions;
-    private short replicas;
-
-    public KafkaAdmin.NewTopics toNewTopics() {
-        return new KafkaAdmin.NewTopics(
-            new NewTopic(topic, partitions, replicas),
-            new NewTopic(topic + "-retry", partitions, replicas),
-            new NewTopic(topic + "-dlt", partitions, replicas));
-    }
+    private int concurrency;
 
 }

@@ -2,7 +2,12 @@ server.port: 9000
 
 spring:
     kafka:
-        bootstrap-servers: localhost:19092,localhost:29092
+        bootstrap-servers: localhost:19092 # localhost:19092,localhost:29092
+        producer.properties:
+            acks: 0 # 0, 1, all
+            batch.size: 1024
+            linger.ms: 10000
+            # transactional.id: custom-tx-id
     cloud.zookeeper:
         config.enabled: false
         connect-string: localhost:2181
@@ -12,6 +17,5 @@ springdoc.swagger-ui.path: /swagger-ui.html
 app:
     user-events:
         topic: user-events
-        partitions: 3
-        replicas: 2
-        fail-on-processing: false
+        partitions: 1 # 1, 3
+        replicas: 1   # 1, 2

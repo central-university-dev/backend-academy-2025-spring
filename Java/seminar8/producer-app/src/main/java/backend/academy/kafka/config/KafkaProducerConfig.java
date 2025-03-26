@@ -1,6 +1,5 @@
 package backend.academy.kafka.config;
 
-import backend.academy.kafka.model.UserEvent;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 
 
 @Configuration
@@ -34,33 +32,10 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
-        // Acks
-        props.put(ProducerConfig.ACKS_CONFIG, "0");
-        // props.put(ProducerConfig.ACKS_CONFIG, "1");
-        // props.put(ProducerConfig.ACKS_CONFIG, "all");
-
-        // Batching
-        props.put(ProducerConfig.LINGER_MS_CONFIG, 10_000);
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 1_000);
-
         // Partitioning
         props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, CustomUserPartitioner.class);
 
-        // Transactional
-        // props.put(ProducerConfig.ACKS_CONFIG, "all");
-        // props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "app-tx-id");
-
         var factory = new DefaultKafkaProducerFactory<Long, String>(props);
-        return new KafkaTemplate<>(factory);
-    }
-
-    @Bean
-    public KafkaTemplate<Long, UserEvent> userEventKafkaTemplate() {
-        var props = properties.buildProducerProperties(null);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, UserEventSerializer.class);
-        props.put(ProducerConfig.ACKS_CONFIG, "0");
-        var factory = new DefaultKafkaProducerFactory<Long, UserEvent>(props);
         return new KafkaTemplate<>(factory);
     }
 
@@ -76,9 +51,7 @@ public class KafkaProducerConfig {
                 .filter(Long.class::isInstance)
                 .map(Long.class::cast)
                 .orElse(0L);
-            var partition = (int) (userId % cluster.partitionCountForTopic(topic));
-            log.info("Для пользователя с ИД {} была выбрана {} партиция", userId, partition);
-            return partition;
+            return (int) (userId % cluster.partitionCountForTopic(topic));
         }
 
         @Override
@@ -90,10 +63,6 @@ public class KafkaProducerConfig {
         public void configure(Map<String, ?> configs) {
 
         }
-
-    }
-
-    public static class UserEventSerializer extends JsonSerializer<UserEvent> {
 
     }
 

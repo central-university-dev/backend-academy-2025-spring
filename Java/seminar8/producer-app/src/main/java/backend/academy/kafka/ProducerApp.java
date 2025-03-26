@@ -16,19 +16,19 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @SpringBootApplication
 @RequiredArgsConstructor
-public class Application {
+public class ProducerApp {
 
     private final UserEventsService service;
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStartup() {
-        service.sendMessages(30L, 10, true, false);
-        service.sendMessages(31L, 10, true, false);
-        service.sendMessages(32L, 10, true, false);
+        service.sendMessages(30L, 10);
+        service.sendMessages(31L, 10);
+        service.sendMessages(32L, 10);
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(ProducerApp.class, args);
     }
 
 }

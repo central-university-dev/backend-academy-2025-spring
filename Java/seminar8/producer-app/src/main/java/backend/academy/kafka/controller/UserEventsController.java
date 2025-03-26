@@ -19,11 +19,9 @@ public class UserEventsController {
     @PostMapping("/users/{user-id}/events")
     public void sendMessages(
         @PathVariable("user-id") long userId,
-        @RequestParam(name = "count", defaultValue = "30") int count,
-        @RequestParam(name = "force", defaultValue = "false") boolean force,
-        @RequestParam(name = "transactional", defaultValue = "false") boolean transactional
+        @RequestParam(name = "count", defaultValue = "30") int count
     ) {
-        service.sendMessages(userId, count, force, transactional);
+        service.sendMessages(userId, count);
     }
 
 }

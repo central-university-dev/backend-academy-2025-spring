@@ -25,27 +25,28 @@ public class UserEventsService {
     @Value("${app.user-events.topic}")
     private String topic;
 
-    public void sendMessages(
-        long userId, int count,
-        boolean force, boolean transactional
-    ) {
+    public void sendMessages(long userId, int count) {
         log.info("Отправляем {} сообщений по клиенту с ИД {}", count, userId);
-
-        if (transactional && template.isTransactional()) {
-            template.executeInTransaction(ops -> {
-                for (int i = 0; i < count; i++) {
-                    ops.send(topic, userId, createRandomEvent(userId));
-                }
-                return true;
-            });
+        if (template.isTransactional()) {
+            sendMessagesV2(userId, count);
         } else {
-            for (int i = 0; i < count; i++) {
-                template.send(topic, userId, createRandomEvent(userId));
-            }
-            if (force) {
-                template.flush();
-            }
+            sendMessagesV1(userId, count);
         }
+    }
+
+    public void sendMessagesV1(long userId, int count) {
+        for (int i = 0; i < count; i++) {
+            template.send(topic, userId, createRandomEvent(userId));
+        }
+    }
+
+    public void sendMessagesV2(long userId, int count) {
+        template.executeInTransaction(ops -> {
+            for (int i = 0; i < count; i++) {
+                ops.send(topic, userId, createRandomEvent(userId));
+            }
+            return true;
+        });
     }
 
     @SneakyThrows

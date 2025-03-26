@@ -19,7 +19,6 @@ public class UserEventsTopicProperties {
     public KafkaAdmin.NewTopics toNewTopics() {
         return new KafkaAdmin.NewTopics(
             new NewTopic(topic, partitions, replicas),
-            new NewTopic(topic + "-retry", partitions, replicas),
             new NewTopic(topic + "-dlt", partitions, replicas));
     }
 

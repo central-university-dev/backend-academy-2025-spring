@@ -18,7 +18,7 @@ services:
         depends_on:
             - postgres
         volumes:
-            - ../changelog:/liquibase/changelog
+            - ./changelog:/liquibase/changelog
         command: [
             "update",
             "--url=jdbc:postgresql://postgres:5432/users",
@@ -51,6 +51,7 @@ services:
             KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
             KAFKA_BROKER_ID: 1
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+            KAFKA_MIN_IN_SYNC_REPLICAS: 2
             # KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
             # KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
             # KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
@@ -72,7 +73,9 @@ services:
             KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
             KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
             KAFKA_BROKER_ID: 2
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2            # KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+            KAFKA_MIN_IN_SYNC_REPLICAS: 2
+            # KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
             # KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
             # KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
             # KAFKA_OPTS: "-Djava.security.auth.login.config=/tmp/jaas.conf"

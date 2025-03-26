@@ -13,14 +13,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 
-@SuppressWarnings("rawtypes") @Slf4j
+@Slf4j
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("rawtypes")
 public class KafkaMonitor {
 
     private final List<AbstractMessageListenerContainer> containers;
     private final UserEventsTopicProperties topicProperties;
-    private final Admin client;
+    private final Admin admin;
 
     @SneakyThrows
     @Scheduled(fixedRate = 10, timeUnit = TimeUnit.SECONDS)
@@ -32,7 +33,7 @@ public class KafkaMonitor {
 
     @SneakyThrows
     private void describeCluster() {
-        var clusterDescription = client.describeCluster();
+        var clusterDescription = admin.describeCluster();
 
         log.info(
             "Кластер состоит из следующих нод: {}",
@@ -45,7 +46,7 @@ public class KafkaMonitor {
 
     @SneakyThrows
     private void describeTopic() {
-        var topicsDescription = client.describeTopics(List.of(topicProperties.getTopic()));
+        var topicsDescription = admin.describeTopics(List.of(topicProperties.getTopic()));
         var topicDescription = topicsDescription.allTopicNames().get().get(topicProperties.getTopic());
 
         log.info(
@@ -70,7 +71,7 @@ public class KafkaMonitor {
             return;
         }
 
-        var groupDescription = client.describeConsumerGroups(List.of(groupId))
+        var groupDescription = admin.describeConsumerGroups(List.of(groupId))
             .describedGroups().get(groupId).get();
         log.info(
             """

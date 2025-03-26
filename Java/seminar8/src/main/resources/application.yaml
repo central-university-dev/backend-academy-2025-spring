@@ -18,3 +18,4 @@ app:
         topic: user-events
         partitions: 3
         replicas: 2
+        fail-on-processing: false

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.annotation.TopicPartition;
@@ -18,6 +19,9 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserEventsMessageConsumer {
+
+    @Value("${app.user-events.fail-on-processing}")
+    private boolean failOnProcessing;
 
     @SneakyThrows
     @KafkaListener(
@@ -40,7 +44,7 @@ public class UserEventsMessageConsumer {
             """,
             record.topic(), record.key(), record.value());
 
-        if (record.value().getId() % 2 == 0) {
+        if (failOnProcessing && record.value().getId() % 2 == 0) {
             log.error("Эмулируем ошибку обработки данных!");
             throw new RuntimeException("Ошибка обработки данных!");
         }

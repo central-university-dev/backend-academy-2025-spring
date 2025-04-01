@@ -1,0 +1,25 @@
+server.port: 9001
+
+spring:
+    kafka:
+        bootstrap-servers: localhost:19092,localhost:29092
+        consumer.properties:
+            enable.auto.commit: false
+            auto.offset.reset: latest
+            isolation.level: read_committed
+            fetch.min.bytes: 1024
+            fetch.max.bytes: 1048576
+            fetch.max.wait.ms: 10000
+            max.poll.interval.ms: 10000
+            max.poll.records: 10
+    cloud.zookeeper:
+        config.enabled: false
+        connect-string: localhost:2181
+
+springdoc.swagger-ui.path: /swagger-ui.html
+
+app:
+    user-events:
+        topic: user-events
+        fail-on-processing: false
+        concurrency: 1 # 3

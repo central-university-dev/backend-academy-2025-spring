@@ -19,6 +19,8 @@ val `mockserver-client-version` = "5.15.0"
 val `doobie-version`            = "1.0.0-RC8"
 val `liquibase-version`         = "4.27.0"
 val `h2-version`                = "2.3.232"
+val `redis4cats-version`        = "1.7.2"
+val `fs2-aws-version`           = "6.2.0"
 
 val deps: List[ModuleID] = List(
   // cats
@@ -72,6 +74,11 @@ val dbDeps: List[ModuleID] = List(
   "org.tpolecat"  %% "doobie-hikari"   % `doobie-version`
 )
 
+val nosqlDeps: List[ModuleID] = List(
+  "dev.profunktor" %% "redis4cats-effects" % `redis4cats-version`,
+  "io.laserdisc"   %% "fs2-aws-s3"         % `fs2-aws-version`
+)
+
 lazy val `seminar-1` = project
   .settings(
     libraryDependencies ++= deps
@@ -117,3 +124,40 @@ lazy val `seminar-5` = project
     libraryDependencies ++= deps ++ dbDeps
   )
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
+lazy val `seminar-6` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
+lazy val `seminar-7` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+  // Set docker build
+  .enablePlugins(
+    DockerPlugin,
+    JavaAppPackaging
+  )
+  .settings(
+    Compile / mainClass  := Some("tbank.ab.Seminar7App"), // class which will be run
+    dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
+    dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
+    Docker / packageName := "tbank-ab",                   // name of the Docker image
+    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+  )
+
+lazy val seminars = (project in file(".")).settings(
+  name := "seminars"
+).aggregate(
+  `seminar-1`,
+  `seminar-2`,
+  `seminar-3`,
+  `seminar-4`,
+  `seminar-4-it`,
+  `seminar-5`,
+  `seminar-6`,
+  `seminar-7`
+)

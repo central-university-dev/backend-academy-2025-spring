@@ -10,8 +10,7 @@ trait AnimalService[F[_]]:
   def updateAnimalInfo(id: AnimalId, info: AnimalInfo): F[AnimalInfo]
 
 object AnimalService:
-  final private class Impl(repo: AnimalRepository[IO])
-      extends AnimalService[IO]:
+  final private class Impl(repo: AnimalRepository[IO]) extends AnimalService[IO]:
     override def animalDescription(id: AnimalId): IO[Option[String]] =
       for info <- repo.find(id)
       yield info.map(_.description)

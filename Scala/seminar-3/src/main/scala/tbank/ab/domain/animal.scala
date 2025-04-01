@@ -20,7 +20,7 @@ object animal {
     description: String,
     habitat: Habitat,
     features: List[String],
-    domesticatedYear: Option[Int],
+    domesticatedYear: Option[Int]
   ) derives ConfigReader,
         Schema,
         JsonReader,

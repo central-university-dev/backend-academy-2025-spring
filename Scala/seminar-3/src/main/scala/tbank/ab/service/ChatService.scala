@@ -11,7 +11,7 @@ trait ChatService[F[_]] {
 object ChatService {
   def make(using animalService: AnimalService[IO]): ChatService[IO] =
     new Impl(animalService)
-  
+
   final private class Impl(animalService: AnimalService[IO]) extends ChatService[IO] {
 
     override def chat(animalId: AnimalId): IO[Pipe[IO, String, String]] = ???

@@ -40,6 +40,9 @@
         <module>seminar3</module>
         <module>seminar4</module>
         <module>seminar5</module>
+        <module>seminar6</module>
+        <module>seminar7</module>
+        <module>seminar8</module>
     </modules>
 
     <dependencyManagement>
@@ -52,6 +55,11 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter</artifactId>
+                <version>${spring-boot-starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-cache</artifactId>
                 <version>${spring-boot-starter.version}</version>
             </dependency>
 

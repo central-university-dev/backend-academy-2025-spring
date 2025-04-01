@@ -26,11 +26,11 @@ object Seminar5App extends IOApp {
 
   def application: Resource[IO, Server] =
     for {
-      _ <- Resource.make(IO.println("Starting application..."))(_ => IO.println("Application closed"))
+      _      <- Resource.make(IO.println("Starting application..."))(_ => IO.println("Application closed"))
       config <- AppConfig.load(ConfigSource.default).toResource
       given DatabaseModule <- DatabaseModule.makeHikari(config.database)
-      _ <- LiquibaseMigration.run().toResource
-      repositories <- Repositories.make(config).toResource
+      _                    <- LiquibaseMigration.run().toResource
+      repositories         <- Repositories.make(config).toResource
       services = Services.make(config, repositories)
       endpoints: List[ServerEndpoint[Fs2Streams[IO] & WebSockets, IO]] =
         List(
@@ -50,12 +50,12 @@ object Seminar5App extends IOApp {
         ).flatMap(_.endpoints)
 
       swagger = SwaggerInterpreter()
-        .fromServerEndpoints[IO](endpoints, "seminar-1", "1.0.0")
+                  .fromServerEndpoints[IO](endpoints, "seminar-1", "1.0.0")
       asyncApi = AsyncAPIInterpreter()
-        .toAsyncAPI(endpoints.map(_.endpoint: AnyEndpoint), "Chat web socket", "1.0")
+                   .toAsyncAPI(endpoints.map(_.endpoint: AnyEndpoint), "Chat web socket", "1.0")
 
       routes = Http4sServerInterpreter[IO]()
-        .toWebSocketRoutes(swagger ++ endpoints)
+                 .toWebSocketRoutes(swagger ++ endpoints)
 
       port <- getPortSafe(config.port).toResource
       server <-
@@ -67,9 +67,9 @@ object Seminar5App extends IOApp {
           .build
           .evalTap(server =>
             IO.println(asyncApi.toYaml) *>
-              IO.println(
-                s"Swagger available at http://localhost:${server.address.getPort}/docs"
-              )
+            IO.println(
+              s"Swagger available at http://localhost:${server.address.getPort}/docs"
+            )
           )
       _ <- Resource.make(IO.println("Application started"))(_ => IO.println("Closing application..."))
     } yield server

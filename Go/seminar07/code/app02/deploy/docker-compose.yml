@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./deploy/app.Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - app.env
+    restart: unless-stopped

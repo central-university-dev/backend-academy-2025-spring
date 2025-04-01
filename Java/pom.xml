@@ -42,6 +42,7 @@
         <module>seminar5</module>
         <module>seminar6</module>
         <module>seminar7</module>
+        <module>seminar8</module>
     </modules>
 
     <dependencyManagement>

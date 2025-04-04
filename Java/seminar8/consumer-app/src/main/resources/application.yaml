@@ -12,6 +12,7 @@ spring:
             fetch.max.wait.ms: 10000
             max.poll.interval.ms: 10000
             max.poll.records: 10
+            schema.registry.url: http://localhost:8083
     cloud.zookeeper:
         config.enabled: false
         connect-string: localhost:2181
@@ -21,5 +22,6 @@ springdoc.swagger-ui.path: /swagger-ui.html
 app:
     user-events:
         topic: user-events
+        avro-topic: user-events-avro
         fail-on-processing: false
         concurrency: 3

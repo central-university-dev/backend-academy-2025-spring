@@ -3,16 +3,14 @@ package backend.academy.kafka.config;
 import backend.academy.kafka.config.properties.UserEventsTopicProperties;
 import backend.academy.kafka.consumer.UserEventsMessageListener;
 import backend.academy.kafka.model.UserEvent;
-import java.util.Collection;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.RoundRobinAssignor;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.LongDeserializer;
@@ -43,13 +41,30 @@ public class KafkaConsumerConfig {
     private final UserEventsTopicProperties userEventsTopicProperties;
     private final UserEventsMessageListener userEventsMessageListener;
 
-    @Bean
+    @Bean("defaultConsumerFactory")
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<Long, UserEvent>> defaultConsumerFactory() {
         var factory = new ConcurrentKafkaListenerContainerFactory<Long, UserEvent>();
         factory.setConsumerFactory(
             consumerFactory(
                 UserEventDeserializer.class,
                 props -> props.put(ConsumerConfig.GROUP_ID_CONFIG, "default-consumer")));
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setCommonErrorHandler(new CommonLoggingErrorHandler());
+        factory.setAutoStartup(true);
+        factory.setConcurrency(1);
+        return factory;
+    }
+
+    @Bean("avroConsumerFactory")
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<Long, Object>> avroConsumerFactory() {
+        var factory = new ConcurrentKafkaListenerContainerFactory<Long, Object>();
+        factory.setConsumerFactory(
+            consumerFactory(
+                KafkaAvroDeserializer.class,
+                props -> {
+                    props.put(ConsumerConfig.GROUP_ID_CONFIG, "avro-consumer");
+                    props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
+                }));
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         factory.setCommonErrorHandler(new CommonLoggingErrorHandler());
         factory.setAutoStartup(true);
@@ -118,12 +133,7 @@ public class KafkaConsumerConfig {
     }
 
     private static String getThreadName(String prefix, MessageListenerContainer c) {
-        return prefix + "_" +
-            Optional.ofNullable(c.getAssignedPartitions()).stream()
-                .flatMap(Collection::stream)
-                .map(TopicPartition::partition)
-                .map(String::valueOf)
-                .collect(Collectors.joining(":"));
+        return prefix + "_" + c.getListenerId();
     }
 
     public static class UserEventDeserializer extends JsonDeserializer<UserEvent> {

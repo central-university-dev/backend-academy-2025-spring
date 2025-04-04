@@ -17,9 +17,9 @@ services:
         ports:
             - "19092:19092"
         environment:
-            KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:9092,DOCKER://localhost:19092
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
-            KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,DOCKER://localhost:19092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
             KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
             KAFKA_BROKER_ID: 1
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
@@ -34,9 +34,9 @@ services:
         ports:
             - "29092:29092"
         environment:
-            KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-2:9092,DOCKER://localhost:29092
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
-            KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,DOCKER://localhost:29092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
             KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
             KAFKA_BROKER_ID: 2
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
@@ -54,3 +54,19 @@ services:
         volumes:
             - ./kui/config.yml:/etc/kafkaui/config.yaml
             - ./kui/config.yml:/etc/kafkaui/dynamic_config.yaml
+
+    schema-registry:
+        image: confluentinc/cp-schema-registry:latest
+        hostname: schema-registry
+        container_name: schema-registry
+        depends_on:
+            - kafka-1
+            - kafka-2
+        ports:
+            - "8083:8081"
+        environment:
+            SCHEMA_REGISTRY_HOST_NAME: schema-registry
+            SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+            SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
+            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-1:9092,kafka-2:9092,DOCKER://localhost:19092,localhost:29092
+            SCHEMA_REGISTRY_DEBUG: 'true'

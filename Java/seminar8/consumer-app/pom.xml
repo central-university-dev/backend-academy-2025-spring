@@ -15,4 +15,53 @@
     <version>${revision}</version>
     <packaging>jar</packaging>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-schema-registry-maven-plugin</artifactId>
+                <version>${confluent.avro.version}</version>
+                <executions>
+                    <execution>
+                        <id>download-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <!--suppress MavenModelInspection -->
+                <configuration>
+                    <schemaRegistryUrls>
+                        <param>http://localhost:8083</param>
+                    </schemaRegistryUrls>
+                    <outputDirectory>${project.basedir}/src/main/avro/</outputDirectory>
+                    <subjectPatterns>
+                        <param>^user-events-avro-value$</param>
+                    </subjectPatterns>
+                    <versions>
+                        <param>latest</param>
+                    </versions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+                <version>${avro.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>schema</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+                            <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

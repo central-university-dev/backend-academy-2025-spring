@@ -2,10 +2,12 @@ package backend.academy.kafka.service;
 
 import static backend.academy.kafka.config.KafkaProducerConfig.AVRO_KAFKA_TEMPLATE_BEAN;
 import static backend.academy.kafka.config.KafkaProducerConfig.GENERIC_KAFKA_TEMPLATE_BEAN;
-import static backend.academy.kafka.model.generated.UserEventType.ACCRUAL;
-import static backend.academy.kafka.model.generated.UserEventType.WITHDRAWAL;
 import backend.academy.kafka.config.properties.UserEventsTopicProperties;
+import backend.academy.kafka.model.CustomUserEvent;
+import backend.academy.kafka.model.CustomUserEvent.CustomUserEventType;
 import backend.academy.kafka.model.generated.UserEvent;
+import backend.academy.kafka.model.generated.UserEventType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,6 +29,7 @@ public class UserEventsService {
     private final AtomicLong idGenerator = new AtomicLong();
 
     private final UserEventsTopicProperties topicProperties;
+    private final ObjectMapper objectMapper;
 
     @Qualifier(GENERIC_KAFKA_TEMPLATE_BEAN)
     private final KafkaTemplate genericTemplate;
@@ -71,7 +74,7 @@ public class UserEventsService {
         long userId, int count,
         Supplier<Object> eventSupplier
     ) {
-        genericTemplate.executeInTransaction(ops -> {
+        template.executeInTransaction(ops -> {
             for (int i = 0; i < count; i++) {
                 ops.send(topic, userId, eventSupplier.get());
             }
@@ -81,7 +84,14 @@ public class UserEventsService {
 
     @SneakyThrows
     private String createRandomEvent(long userId) {
-        return createRawRandomEvent(userId).toString();
+        final var id = idGenerator.incrementAndGet();
+        return objectMapper.writeValueAsString(
+            new CustomUserEvent()
+                .setUserId(userId)
+                .setType(id % 2 == 0 ? CustomUserEventType.ACCRUAL : CustomUserEventType.WITHDRAWAL)
+                .setCreatedAt(LocalDateTime.now())
+                .setId(id)
+        );
     }
 
     @SneakyThrows
@@ -89,9 +99,9 @@ public class UserEventsService {
         final var id = idGenerator.incrementAndGet();
         return UserEvent.newBuilder()
             .setUserId(userId)
-            .setEventType(id % 2 == 0 ? ACCRUAL : WITHDRAWAL)
+            .setEventType(id % 2 == 0 ? UserEventType.ACCRUAL : UserEventType.WITHDRAWAL)
             .setCreatedAt(LocalDateTime.now().toInstant(ZoneOffset.UTC))
-            .setId(idGenerator.incrementAndGet())
+            .setId(id)
             .build();
     }
 

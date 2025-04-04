@@ -1,14 +1,19 @@
 package backend.academy.kafka.service;
 
-import static backend.academy.kafka.model.UserEvent.UserEventType.ACCRUAL;
-import backend.academy.kafka.model.UserEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static backend.academy.kafka.config.KafkaProducerConfig.AVRO_KAFKA_TEMPLATE_BEAN;
+import static backend.academy.kafka.config.KafkaProducerConfig.GENERIC_KAFKA_TEMPLATE_BEAN;
+import static backend.academy.kafka.model.generated.UserEventType.ACCRUAL;
+import static backend.academy.kafka.model.generated.UserEventType.WITHDRAWAL;
+import backend.academy.kafka.config.properties.UserEventsTopicProperties;
+import backend.academy.kafka.model.generated.UserEvent;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,34 +21,59 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class UserEventsService {
 
     private final AtomicLong idGenerator = new AtomicLong();
-    private final KafkaTemplate<Long, String> template;
-    private final ObjectMapper objectMapper;
 
-    @Value("${app.user-events.topic}")
-    private String topic;
+    private final UserEventsTopicProperties topicProperties;
+
+    @Qualifier(GENERIC_KAFKA_TEMPLATE_BEAN)
+    private final KafkaTemplate genericTemplate;
+
+    @Qualifier(AVRO_KAFKA_TEMPLATE_BEAN)
+    private final KafkaTemplate avroTemplate;
 
     public void sendMessages(long userId, int count) {
+        sendMessages(userId, count, false, false);
+    }
+
+    public void sendMessages(long userId, int count, boolean useAvro, boolean inTransaction) {
         log.info("Отправляем {} сообщений по клиенту с ИД {}", count, userId);
-        if (template.isTransactional()) {
-            sendMessagesV2(userId, count);
+        final var template = useAvro ? avroTemplate : genericTemplate;
+        if (inTransaction && !template.isTransactional()) {
+            throw new UnsupportedOperationException("Используемый KafkaTemplate не поддерживает транзакции");
+        }
+
+        final var topic = useAvro ? topicProperties.getAvroTopic() : topicProperties.getTopic();
+        final Supplier<Object> eventSupplier = () -> useAvro ? createRawRandomEvent(userId) : createRandomEvent(userId);
+
+        if (inTransaction) {
+            sendMessagesV2(template, topic, userId, count, eventSupplier);
         } else {
-            sendMessagesV1(userId, count);
+            sendMessagesV1(template, topic, userId, count, eventSupplier);
         }
     }
 
-    public void sendMessagesV1(long userId, int count) {
+    @SneakyThrows
+    private void sendMessagesV1(
+        KafkaTemplate template, String topic,
+        long userId, int count,
+        Supplier<Object> eventSupplier
+    ) {
         for (int i = 0; i < count; i++) {
-            template.send(topic, userId, createRandomEvent(userId));
+            template.send(topic, userId, eventSupplier.get());
         }
     }
 
-    public void sendMessagesV2(long userId, int count) {
-        template.executeInTransaction(ops -> {
+    private void sendMessagesV2(
+        KafkaTemplate template, String topic,
+        long userId, int count,
+        Supplier<Object> eventSupplier
+    ) {
+        genericTemplate.executeInTransaction(ops -> {
             for (int i = 0; i < count; i++) {
-                ops.send(topic, userId, createRandomEvent(userId));
+                ops.send(topic, userId, eventSupplier.get());
             }
             return true;
         });
@@ -51,12 +81,18 @@ public class UserEventsService {
 
     @SneakyThrows
     private String createRandomEvent(long userId) {
-        return objectMapper.writeValueAsString(
-            new UserEvent()
-                .setUserId(userId)
-                .setType(ACCRUAL)
-                .setCreatedAt(LocalDateTime.now())
-                .setId(idGenerator.incrementAndGet()));
+        return createRawRandomEvent(userId).toString();
+    }
+
+    @SneakyThrows
+    private UserEvent createRawRandomEvent(long userId) {
+        final var id = idGenerator.incrementAndGet();
+        return UserEvent.newBuilder()
+            .setUserId(userId)
+            .setEventType(id % 2 == 0 ? ACCRUAL : WITHDRAWAL)
+            .setCreatedAt(LocalDateTime.now().toInstant(ZoneOffset.UTC))
+            .setId(idGenerator.incrementAndGet())
+            .build();
     }
 
 }

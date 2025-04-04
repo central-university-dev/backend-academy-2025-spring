@@ -13,12 +13,14 @@ import org.springframework.kafka.core.KafkaAdmin;
 public class UserEventsTopicProperties {
 
     private String topic;
+    private String avroTopic;
     private int partitions;
     private short replicas;
 
     public KafkaAdmin.NewTopics toNewTopics() {
         return new KafkaAdmin.NewTopics(
             new NewTopic(topic, partitions, replicas),
+            new NewTopic(avroTopic, partitions, replicas),
             new NewTopic(topic + "-dlt", partitions, replicas));
     }
 

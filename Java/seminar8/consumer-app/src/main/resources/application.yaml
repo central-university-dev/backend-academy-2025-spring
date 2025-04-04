@@ -5,7 +5,7 @@ spring:
         bootstrap-servers: localhost:19092,localhost:29092
         consumer.properties:
             enable.auto.commit: false
-            auto.offset.reset: latest
+            auto.offset.reset: earliest
             isolation.level: read_committed
             fetch.min.bytes: 1024
             fetch.max.bytes: 1048576
@@ -22,4 +22,4 @@ app:
     user-events:
         topic: user-events
         fail-on-processing: false
-        concurrency: 1 # 3
+        concurrency: 3

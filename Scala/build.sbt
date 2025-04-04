@@ -21,6 +21,7 @@ val `liquibase-version`         = "4.27.0"
 val `h2-version`                = "2.3.232"
 val `redis4cats-version`        = "1.7.2"
 val `fs2-aws-version`           = "6.2.0"
+val `fs2-kafka-version` = "3.6.0"
 
 val deps: List[ModuleID] = List(
   // cats
@@ -77,6 +78,10 @@ val dbDeps: List[ModuleID] = List(
 val nosqlDeps: List[ModuleID] = List(
   "dev.profunktor" %% "redis4cats-effects" % `redis4cats-version`,
   "io.laserdisc"   %% "fs2-aws-s3"         % `fs2-aws-version`
+)
+
+val kafkaDeps: List[ModuleID] = List(
+  "com.github.fd4s" %% "fs2-kafka" % `fs2-kafka-version`
 )
 
 lazy val `seminar-1` = project
@@ -149,6 +154,24 @@ lazy val `seminar-7` = project
     dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
+lazy val `seminar-8` = project
+  .settings(
+      libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+    )
+    .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+    // Set docker build
+    .enablePlugins(
+      DockerPlugin,
+      JavaAppPackaging
+    )
+    .settings(
+      Compile / mainClass  := Some("tbank.ab.Seminar8App"), // class which will be run
+      dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
+      dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
+      Docker / packageName := "tbank-ab",                   // name of the Docker image
+      dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+  )
+
 lazy val seminars = (project in file(".")).settings(
   name := "seminars"
 ).aggregate(
@@ -159,5 +182,6 @@ lazy val seminars = (project in file(".")).settings(
   `seminar-4-it`,
   `seminar-5`,
   `seminar-6`,
-  `seminar-7`
+  `seminar-7`,
+  `seminar-8`
 )

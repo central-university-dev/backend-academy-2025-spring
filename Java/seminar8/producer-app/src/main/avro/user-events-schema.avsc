@@ -1,0 +1,33 @@
+{
+    "type": "record",
+    "name": "UserEvent",
+    "namespace": "backend.academy.kafka.model.generated",
+    "fields": [
+        {
+            "name": "id",
+            "type": "long"
+        },
+        {
+            "name": "userId",
+            "type": "long"
+        },
+        {
+            "name": "createdAt",
+            "type": {
+               "type": "long",
+               "logicalType": "timestamp-millis"
+            }
+        },
+        {
+            "name": "eventType",
+            "type": {
+                "name": "UserEventType",
+                "type": "enum",
+                "symbols": [
+                    "WITHDRAWAL",
+                    "ACCRUAL"
+                ]
+            }
+        }
+    ]
+}

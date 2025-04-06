@@ -11,14 +11,14 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class UserEvent {
+public class CustomUserEvent {
 
     private Long id;
     private Long userId;
-    private UserEventType type;
+    private CustomUserEventType type;
     private LocalDateTime createdAt;
 
-    public enum UserEventType {
+    public enum CustomUserEventType {
         WITHDRAWAL, ACCRUAL;
     }
 

@@ -9,7 +9,6 @@ jobs:
     services:
       docker:
         image: docker:dind-rootless
-        options: --privileged
         ports:
           - 2375:2375
     container:

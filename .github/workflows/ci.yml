@@ -9,4 +9,9 @@ jobs:
     container:
       image: sbtscala/scala-sbt:eclipse-temurin-21.0.6_7_1.10.10_2.13.16
     steps:
-      - run: docker --version
+      - name: Install Docker CLI
+        run: |
+          apt-get update
+          apt-get install -y docker.io
+          docker --version
+          docker version

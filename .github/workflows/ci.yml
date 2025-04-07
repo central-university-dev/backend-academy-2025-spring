@@ -9,6 +9,8 @@ jobs:
     services:
       docker-dind:
         image: docker:dind
+        ports:
+          - 2375:2375
         env:
           DOCKER_TLS_CERTDIR: ""
     container:

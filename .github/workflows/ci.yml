@@ -17,6 +17,8 @@ jobs:
       image: ubuntu:latest
     steps:
       - name: Install Docker CLI
+        env:
+          DOCKER_HOST: tcp://docker-dind:2375
         run: |
           apt-get update
           apt-get install -y docker.io

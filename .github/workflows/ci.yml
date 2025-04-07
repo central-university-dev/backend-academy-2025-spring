@@ -17,10 +17,14 @@ jobs:
       image: ubuntu:latest
     steps:
       - name: Install Docker CLI
-        env:
-          DOCKER_HOST: tcp://docker-dind:2375
         run: |
           apt-get update
           apt-get install -y docker.io
           docker --version
+      # Настраиваем окружение для работы с DinD
+      - name: Configure Docker
+        env:
+          DOCKER_HOST: tcp://docker-dind:2375
+        run: |
+          echo "DOCKER_HOST=$DOCKER_HOST" >> $GITHUB_ENV
           docker version

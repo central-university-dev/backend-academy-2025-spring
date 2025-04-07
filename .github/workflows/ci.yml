@@ -9,9 +9,8 @@ jobs:
     services:
       docker:
         image: docker:dind-rootless
-        options: --privileged --shm-size=2g
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock:ro
+        ports:
+          - 2375:2375
     container:
       image: ubuntu:latest
     steps:
@@ -20,7 +19,10 @@ jobs:
           apt-get update
           apt-get install -y docker.io
           docker --version
-      - name: Test Docker
+          echo "DOCKER_HOST=tcp://docker:2375" >> $GITHUB_ENV
+
+      - name: Build image
         run: |
           docker version
           docker info
+

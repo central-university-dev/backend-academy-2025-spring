@@ -7,24 +7,20 @@ jobs:
     runs-on: edu-self-hosted
     timeout-minutes: 10
     services:
-      docker-dind:
+      docker:
         image: docker:dind
-        ports:
-          - 2375:2375
-        env:
-          DOCKER_TLS_CERTDIR: ""
+        options: --shm-size=2g
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
     container:
       image: ubuntu:latest
     steps:
-      - name: Install Docker CLI
+      - name: Install Docker
         run: |
           apt-get update
           apt-get install -y docker.io
           docker --version
-      # Настраиваем окружение для работы с DinD
-      - name: Configure Docker
-        env:
-          DOCKER_HOST: tcp://docker-dind:2375
+      - name: Test Docker
         run: |
-          echo "DOCKER_HOST=$DOCKER_HOST" >> $GITHUB_ENV
           docker version
+          docker info

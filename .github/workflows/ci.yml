@@ -9,7 +9,6 @@ jobs:
     services:
       docker-dind:
         image: docker:dind
-        privileged: true
         env:
           DOCKER_TLS_CERTDIR: ""
     container:

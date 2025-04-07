@@ -1,0 +1,28 @@
+name: Test CI
+
+on: [push]
+
+jobs:
+  my-job:
+    runs-on: edu-self-hosted
+    timeout-minutes: 10
+    services:
+      docker:
+        image: docker:dind-rootless
+        ports:
+          - 2375:2375
+    container:
+      image: ubuntu:latest
+    steps:
+      - name: Install Docker
+        run: |
+          apt-get update
+          apt-get install -y docker.io
+          docker --version
+          echo "DOCKER_HOST=tcp://docker:2375" >> $GITHUB_ENV
+
+      - name: Build image
+        run: |
+          docker version
+          docker info
+

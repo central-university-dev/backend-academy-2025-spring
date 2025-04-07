@@ -8,12 +8,12 @@ jobs:
     timeout-minutes: 10
     services:
       docker:
-        image: docker:dind
-        options: --privileged
-        ports:
-          - 2375:2375
+        image: docker:dind-rootless
+        options: --privileged --shm-size=2g
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
     container:
-      image: sbtscala/scala-sbt:eclipse-temurin-21.0.6_7_1.10.10_2.13.16
+      image: ubuntu:latest
     steps:
       - name: Install Docker CLI
         run: |

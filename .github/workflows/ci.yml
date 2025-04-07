@@ -7,10 +7,11 @@ jobs:
     runs-on: edu-self-hosted
     timeout-minutes: 10
     services:
-      docker:
-        image: docker:dind-rootless
-        ports:
-          - 2375:2375
+      docker-dind:
+        image: docker:dind
+        privileged: true
+        env:
+          DOCKER_TLS_CERTDIR: ""
     container:
       image: ubuntu:latest
     steps:

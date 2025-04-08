@@ -1,0 +1,96 @@
+version: '3.1'
+
+services:
+    postgres:
+        image: "postgres:15"
+        container_name: postgres
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: tx-anti-fraud
+        ports:
+            - '5432:5432'
+
+    liquibase:
+        image: liquibase/liquibase
+        container_name: liquibase
+        depends_on:
+            - postgres
+        volumes:
+            - ./changelog:/liquibase/changelog
+        command: [
+            "update",
+            "--url=jdbc:postgresql://postgres:5432/tx-anti-fraud",
+            "--username=admin", "--password=admin",
+            "--changeLogFile=changelog/db.changelog.sql"
+        ]
+
+    zookeeper:
+        image: confluentinc/cp-zookeeper:latest
+        hostname: zookeeper
+        container_name: zookeeper
+        ports:
+            - "2181:2181"
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+
+    kafka-1:
+        image: confluentinc/cp-kafka:latest
+        hostname: kafka
+        container_name: kafka-1
+        ports:
+            - "19092:19092"
+        environment:
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,DOCKER://localhost:19092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+            KAFKA_BROKER_ID: 1
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+            KAFKA_MIN_IN_SYNC_REPLICAS: 2
+        depends_on:
+            - zookeeper
+
+    kafka-2:
+        image: confluentinc/cp-kafka:latest
+        hostname: kafka
+        container_name: kafka-2
+        ports:
+            - "29092:29092"
+        environment:
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,DOCKER://localhost:29092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+            KAFKA_BROKER_ID: 2
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+            KAFKA_MIN_IN_SYNC_REPLICAS: 2
+        depends_on:
+            - zookeeper
+
+    kafka-ui:
+        image: provectuslabs/kafka-ui:latest
+        container_name: kafka-ui
+        ports:
+            - "8082:8080"
+        environment:
+            DYNAMIC_CONFIG_ENABLED: 'true'
+        volumes:
+            - ./kui/config.yml:/etc/kafkaui/config.yaml
+            - ./kui/config.yml:/etc/kafkaui/dynamic_config.yaml
+
+    schema-registry:
+        image: confluentinc/cp-schema-registry:latest
+        hostname: schema-registry
+        container_name: schema-registry
+        depends_on:
+            - kafka-1
+            - kafka-2
+        ports:
+            - "8083:8081"
+        environment:
+            SCHEMA_REGISTRY_HOST_NAME: schema-registry
+            SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+            SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
+            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-1:9092,kafka-2:9092,DOCKER://localhost:19092,localhost:29092
+            SCHEMA_REGISTRY_DEBUG: 'true'

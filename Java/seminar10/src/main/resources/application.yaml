@@ -1,0 +1,7 @@
+server.port: 9001
+
+spring:
+
+springdoc.swagger-ui.path: /swagger-ui.html
+
+app:

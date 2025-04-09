@@ -23,6 +23,10 @@ spring:
             fetch.max.wait.ms: 10000
             max.poll.interval.ms: 10000
             max.poll.records: 10
+        streams.properties:
+            application.id: tx-fraud-prevention-service
+            statestore.cache.max.bytes: 1024
+            commit.interval.ms: 1000
 
 springdoc.swagger-ui.path: /swagger-ui.html
 

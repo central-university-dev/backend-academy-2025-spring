@@ -6,7 +6,9 @@ import static backend.academy.kafka.dto.UserEvent.UserEventType.WITHDRAWAL;
 import backend.academy.kafka.config.properties.UserEventsTopicProperties;
 import backend.academy.kafka.dto.UserEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class UserEventsService {
 
     private final AtomicLong idGenerator = new AtomicLong();
+    private final Random random = new Random(System.currentTimeMillis());
 
     private final UserEventsTopicProperties topicProperties;
     private final ObjectMapper objectMapper;
@@ -44,6 +47,7 @@ public class UserEventsService {
         return objectMapper.writeValueAsString(
             new UserEvent()
                 .setUserId(userId)
+                .setAmount(BigDecimal.valueOf(random.nextLong(10, 1000)))
                 .setType(id % 2 == 0 ? ACCRUAL : WITHDRAWAL)
                 .setCreatedAt(LocalDateTime.now())
                 .setEventId(id)

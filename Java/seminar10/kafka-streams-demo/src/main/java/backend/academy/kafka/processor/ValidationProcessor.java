@@ -1,7 +1,8 @@
 package backend.academy.kafka.processor;
 
-import static backend.academy.kafka.config.KafkaStreamsConfig.Processors.ERRORS_PROCESSOR;
-import static backend.academy.kafka.config.KafkaStreamsConfig.Processors.VALIDATION_PROCESSOR;
+import static backend.academy.kafka.config.KafkaStreamsConfig.TopologyComponents.ENRICHMENT_PROCESSOR;
+import static backend.academy.kafka.config.KafkaStreamsConfig.TopologyComponents.ERRORS_PROCESSOR;
+import static backend.academy.kafka.config.KafkaStreamsConfig.TopologyComponents.VALIDATION_PROCESSOR;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 import backend.academy.kafka.dto.UserEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +41,7 @@ public class ValidationProcessor implements Processor<String, String, String, St
     @Override
     @SneakyThrows
     public void process(Record<String, String> record) {
-        log.info("Обарабтываем запись из топика: key={}, value={}", record.key(), record.value());
+        log.info("Валидируем запись: {}", record.value());
         try {
             var user = objectMapper.readValue(record.value(), UserEvent.class);
             var violations = validator.validateObject(user);
@@ -72,6 +73,7 @@ public class ValidationProcessor implements Processor<String, String, String, St
                 ERRORS_PROCESSOR
             );
         }
+        context.forward(record, ENRICHMENT_PROCESSOR);
     }
 
 }

@@ -25,3 +25,8 @@ create table users
     constraint fk_accounts
         foreign key (account_id) references accounts
 );
+
+--changeset s.a.khvatov:2-init-data
+insert into accounts (account_id, account_number) values (1, 'account_1'), (2, 'account_2');
+insert into users (user_id, account_id) values (30, 1), (32, 2);
+insert into account_scores (account_id, score) values (1, 100);

@@ -17,7 +17,7 @@
 
     <modules>
         <module>spring-batch-demo</module>
-        <!--        <module>kafka-streams-demo</module>-->
+        <module>kafka-streams-demo</module>
     </modules>
 
     <dependencyManagement>

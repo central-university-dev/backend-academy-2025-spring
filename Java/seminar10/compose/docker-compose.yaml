@@ -78,19 +78,3 @@ services:
         volumes:
             - ./kui/config.yml:/etc/kafkaui/config.yaml
             - ./kui/config.yml:/etc/kafkaui/dynamic_config.yaml
-
-    schema-registry:
-        image: confluentinc/cp-schema-registry:latest
-        hostname: schema-registry
-        container_name: schema-registry
-        depends_on:
-            - kafka-1
-            - kafka-2
-        ports:
-            - "8083:8081"
-        environment:
-            SCHEMA_REGISTRY_HOST_NAME: schema-registry
-            SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
-            SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
-            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-1:9092,kafka-2:9092,DOCKER://localhost:19092,localhost:29092
-            SCHEMA_REGISTRY_DEBUG: 'true'

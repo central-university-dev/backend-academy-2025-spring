@@ -9,14 +9,19 @@ create table accounts
 
 create table account_scores
 (
-    account_id     bigserial primary key,
-    score          integer     not null,
-    updated_at     timestamp default now(),
+    account_id bigserial primary key,
+    score      integer not null,
+    updated_at timestamp default now(),
 
     constraint fk_accounts
         foreign key (account_id) references accounts
 );
 
+create table users
+(
+    user_id    bigserial primary key,
+    account_id integer not null,
 
-
-
+    constraint fk_accounts
+        foreign key (account_id) references accounts
+);

@@ -1,0 +1,15 @@
+server.port: 9001
+
+spring:
+    batch:
+        jdbc.initialize-schema: "always"
+    datasource:
+        url: jdbc:postgresql://localhost:5432/tx-anti-fraud
+        username: admin
+        password: admin
+
+
+springdoc.swagger-ui.path: /swagger-ui.html
+
+app:
+    input.file: ./Java/seminar10/spring-batch-demo/src/main/resources/data.csv

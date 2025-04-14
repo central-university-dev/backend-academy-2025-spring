@@ -14,6 +14,7 @@ public class UserEventsTopicProperties {
 
     private String inputTopic;
     private String outputTopic;
+    private String statsTopic;
     private String dlqOutputTopic;
     private int partitions;
     private short replicas;
@@ -22,6 +23,7 @@ public class UserEventsTopicProperties {
         return new KafkaAdmin.NewTopics(
             new NewTopic(inputTopic, partitions, replicas),
             new NewTopic(outputTopic, partitions, replicas),
+            new NewTopic(statsTopic, partitions, replicas),
             new NewTopic(dlqOutputTopic, partitions, replicas)
         );
     }

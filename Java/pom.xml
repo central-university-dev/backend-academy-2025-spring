@@ -43,6 +43,7 @@
         <module>seminar6</module>
         <module>seminar7</module>
         <module>seminar8</module>
+        <module>seminar10</module>
     </modules>
 
     <repositories>

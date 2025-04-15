@@ -1,0 +1,40 @@
+server.port: 9001
+
+spring:
+    application.name: tx-anti-fraud-service
+    batch:
+        jdbc.initialize-schema: "always"
+    datasource:
+        url: jdbc:postgresql://localhost:5432/tx-anti-fraud
+        username: admin
+        password: admin
+    kafka:
+        bootstrap-servers: localhost:19092,localhost:29092
+        producer.properties:
+            acks: 1
+            batch.size: 1024
+            linger.ms: 10000
+        consumer.properties:
+            enable.auto.commit: false
+            auto.offset.reset: earliest
+            isolation.level: read_committed
+            fetch.min.bytes: 1024
+            fetch.max.bytes: 1048576
+            fetch.max.wait.ms: 10000
+            max.poll.interval.ms: 10000
+            max.poll.records: 10
+        streams.properties:
+            application.id: tx-fraud-prevention-service
+            statestore.cache.max.bytes: 1024
+            commit.interval.ms: 1000
+
+springdoc.swagger-ui.path: /swagger-ui.html
+
+app:
+    user-events:
+        input-topic: user-events
+        output-topic: fp-results
+        stats-topic: fp-stats
+        dlq-output-topic: fp-errors
+        partitions: 3
+        replicas: 2

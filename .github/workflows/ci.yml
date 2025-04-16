@@ -7,15 +7,20 @@ jobs:
     runs-on: edu-self-hosted
     timeout-minutes: 10
     services:
-      docker:
+      docker-dind:
         image: docker:dind
         ports:
           - 2375:2375
+        env:
+          DOCKER_TLS_CERTDIR: ""
+    container:
+      image: ubuntu:latest
+      options: --add-host=docker:host-gateway
     steps:
       - name: Install Docker CLI
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
+          apt-get update
+          apt-get install -y docker.io
           docker --version
           echo "DOCKER_HOST=tcp://docker:2375" >> $GITHUB_ENV
 

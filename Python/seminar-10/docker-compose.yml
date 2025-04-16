@@ -1,0 +1,46 @@
+version: '3.6'
+
+services:
+  zookeeper:
+    networks:
+      - kafka_network
+    extends:
+      file: docker/zookeeper/docker-compose.zookeeper.yml
+      service: zookeeper
+
+  broker1:
+    networks:
+      - kafka_network
+    extends:
+      file: docker/kafka/docker-compose.kafka.yml
+      service: broker1
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+
+  schemaregistry:
+    networks:
+      - kafka_network
+    extends:
+      file: docker/schemaregistry/docker-compose.schemaregistry.yml
+      service: schemaregistry
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+
+  control-center:
+    networks:
+      - kafka_network
+    extends:
+      file: docker/control-center/docker-compose.control-center.yml
+      service: control-center
+    depends_on:
+      broker1:
+        condition: service_healthy
+      schemaregistry:
+        condition: service_healthy
+
+
+networks:
+  kafka_network:
+    name: kafka_docker_net

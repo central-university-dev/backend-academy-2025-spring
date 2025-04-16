@@ -1,0 +1,21 @@
+version: '3.6'
+
+services:
+  schemaregistry:
+    image: confluentinc/cp-schema-registry:latest
+    restart: unless-stopped
+    hostname: schemaregistry
+    container_name: schemaregistry
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
+      SCHEMA_REGISTRY_HOST_NAME: schemaregistry
+      SCHEMA_REGISTRY_LISTENERS: "http://schemaregistry:8085"
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker1:29092'
+      SCHEMA_REGISTRY_LOG4J_LOGGERS: io.confluent.kafka.schemaregistry.storage.KafkaStore=ERROR,org.apache.kafka.common.utils.AppInfoParser=ERROR,io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig=ERROR,org.apache.kafka.clients.admin.AdminClientConfig=ERROR,org.apache.kafka.clients.producer.ProducerConfig=ERROR,org.apache.kafka.clients.consumer.ConsumerConfig=ERROR
+    ports:
+      - "8085:8085"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://schemaregistry:8085/subjects" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5

@@ -1,0 +1,43 @@
+version: '3.6'
+
+services:
+  broker1:
+    image: confluentinc/cp-kafka:latest
+    hostname: broker1
+    container_name: broker1
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    restart: unless-stopped
+    volumes:
+      - './init-kafka-broker.sh:/etc/confluent/docker/init-kafka-broker.sh:ro'
+      - './kafka_server_jaas.conf:/kafka_server_jaas.conf:ro'
+    command: /bin/bash /etc/confluent/docker/init-kafka-broker.sh
+    env_file: ../../.env
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://broker1:29092,SASL_PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092,SASL_PLAINTEXT://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: SASL_PLAINTEXT
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/kafka_server_jaas.conf
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_NUM_PARTITIONS: 4
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_DELETE_TOPIC_ENABLE: true
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: ERROR
+      KAFKA_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.apache.kafka=ERROR,kafka=ERROR,kafka.cluster=ERROR,kafka.controller=ERROR,kafka.coordinator=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,state.change.logger=ERROR,kafka.log.LogCleaner=ERROR
+      ZOOKEEPER_SASL_ENABLED: false
+      TEST_KAFKA_PASS: test
+      TEST_KAFKA_USER: testpass
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server=broker1:29092" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5

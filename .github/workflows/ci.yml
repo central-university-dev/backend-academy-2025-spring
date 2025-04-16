@@ -6,6 +6,8 @@ jobs:
   docker-test:
     runs-on: edu-self-hosted
     timeout-minutes: 5
+    container:
+      image: ubuntu:latest
     steps:
       - name: Check Docker installation
         run: |

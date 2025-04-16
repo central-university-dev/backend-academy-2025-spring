@@ -5,26 +5,15 @@ on: [push]
 jobs:
   my-job:
     runs-on: edu-self-hosted
-    timeout-minutes: 10
     services:
       docker-dind:
         image: docker:dind
         ports:
           - 2375:2375
-        env:
-          DOCKER_TLS_CERTDIR: ""
-    container:
-      image: ubuntu:latest
-      options: --add-host=docker:host-gateway
     steps:
-      - name: Install Docker CLI
+      - name: Setup Docker
         run: |
-          apt-get update
-          apt-get install -y docker.io
-          docker --version
-          echo "DOCKER_HOST=tcp://docker:2375" >> $GITHUB_ENV
-
-      - name: Build image
-        run: |
-          docker version
-          docker info
+          echo "DOCKER_HOST=tcp://localhost:2375" >> $GITHUB_ENV
+          
+      - name: Test
+        run: docker version

@@ -5,15 +5,9 @@ on: [push]
 jobs:
   docker-test:
     runs-on: edu-self-hosted
-    timeout-minutes: 5
-    container:
-      image: ubuntu:latest
+    container: docker:cli  # Официальный образ с предустановленным Docker CLI
     steps:
-      - name: Check Docker installation
-        run: |
-          docker --version
-          docker info
-
       - name: Run Hello-World
         run: |
+          docker --version
           docker run --rm hello-world

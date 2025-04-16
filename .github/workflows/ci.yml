@@ -8,16 +8,14 @@ jobs:
     timeout-minutes: 10
     services:
       docker:
-        image: docker:dind-rootless
+        image: docker:dind
         ports:
           - 2375:2375
-    container:
-      image: ubuntu:latest
     steps:
-      - name: Install Docker
+      - name: Install Docker CLI
         run: |
-          apt-get update
-          apt-get install -y docker.io
+          sudo apt-get update
+          sudo apt-get install -y docker.io
           docker --version
           echo "DOCKER_HOST=tcp://docker:2375" >> $GITHUB_ENV
 
@@ -25,4 +23,3 @@ jobs:
         run: |
           docker version
           docker info
-

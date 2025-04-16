@@ -4,23 +4,10 @@ on: [push]
 jobs:
   docker-test:
     runs-on: edu-self-hosted
-    services:
-      docker-dind:
-        image: docker:dind
-        ports:
-          - 2375:2375
-        env:
-          DOCKER_TLS_CERTDIR: ""  # Отключаем TLS
-        options: --host tcp://0.0.0.0:2375  # Явно слушаем все интерфейсы
     container:
       image: docker:cli
-      options: --network service  # Подключаемся к сети сервисов
+      options: -v /var/run/docker.sock:/var/run/docker.sock  # Монтируем сокет хоста
     steps:
-      - name: Test connection
-        run: |
-          docker --version
-          docker info
-          
       - name: Run Hello-World
         run: |
           docker run --rm hello-world

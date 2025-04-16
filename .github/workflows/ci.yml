@@ -1,26 +1,17 @@
-name: Test CI
+name: Docker Test
 
 on: [push]
 
 jobs:
-  Testing:
-    timeout-minutes: 10
+  docker-test:
     runs-on: edu-self-hosted
-
+    timeout-minutes: 5
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Check Docker installation
+        run: |
+          docker --version
+          docker info
 
-      - name: Build Docker image
-        run: docker build -t backend-academy-2025-spring-image:${{ github.sha }} .
-
-      - name: Run Docker container
-        run: docker run --name backend-academy-2025-spring-container-${{ github.sha }}-${{ github.run_number }} backend-academy-2025-spring-image:${{ github.sha }}
-
-      - name: Remove Docker container
-        if: always()
-        run: docker rm -f backend-academy-2025-spring-container-${{ github.sha }}-${{ github.run_number }} || true
-
-      - name: Remove Docker image
-        if: always()
-        run: docker rmi backend-academy-2025-spring-image:${{ github.sha }} || true
+      - name: Run Hello-World
+        run: |
+          docker run --rm hello-world

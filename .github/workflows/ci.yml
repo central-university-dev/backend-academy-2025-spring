@@ -3,17 +3,24 @@ name: Test CI
 on: [push]
 
 jobs:
-  my-job:
+  Testing:
+    timeout-minutes: 10
     runs-on: edu-self-hosted
-    services:
-      docker-dind:
-        image: docker:dind
-        ports:
-          - 2375:2375
+
     steps:
-      - name: Setup Docker
-        run: |
-          echo "DOCKER_HOST=tcp://localhost:2375" >> $GITHUB_ENV
-          
-      - name: Test
-        run: docker version
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t backend-academy-2025-spring-image:${{ github.sha }} .
+
+      - name: Run Docker container
+        run: docker run --name backend-academy-2025-spring-container-${{ github.sha }}-${{ github.run_number }} backend-academy-2025-spring-image:${{ github.sha }}
+
+      - name: Remove Docker container
+        if: always()
+        run: docker rm -f backend-academy-2025-spring-container-${{ github.sha }}-${{ github.run_number }} || true
+
+      - name: Remove Docker image
+        if: always()
+        run: docker rmi backend-academy-2025-spring-image:${{ github.sha }} || true

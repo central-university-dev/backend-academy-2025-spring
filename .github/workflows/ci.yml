@@ -10,13 +10,17 @@ jobs:
         ports:
           - 2375:2375
         env:
-          DOCKER_TLS_CERTDIR: ""  # Отключаем TLS (упрощаем подключение)
+          DOCKER_TLS_CERTDIR: ""  # Отключаем TLS
+        options: --host tcp://0.0.0.0:2375  # Явно слушаем все интерфейсы
     container:
-      image: docker:cli  # Официальный образ с Docker CLI
-      options: --add-host docker-dind:host-gateway  # Позволяет резолвить docker-dind
+      image: docker:cli
+      options: --network service  # Подключаемся к сети сервисов
     steps:
-      - name: Run Hello-World
+      - name: Test connection
         run: |
           docker --version
-          export DOCKER_HOST=tcp://docker-dind:2375  # Подключаемся к Docker демону
+          docker info
+          
+      - name: Run Hello-World
+        run: |
           docker run --rm hello-world

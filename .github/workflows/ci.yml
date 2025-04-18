@@ -9,18 +9,14 @@ jobs:
         image: docker:dind
         ports:
           - 2375:2375
-        options: --privileged --network host  # Используем хост-сеть для сервиса
+        options: --privileged
     container:
       image: docker:cli
-      options: --network host  # Подключаем основной контейнер к хост-сети
     steps:
       - name: Test connection
         run: |
           docker --version
-          export DOCKER_HOST=tcp://localhost:2375
           docker info
-          
       - name: Run Hello-World
         run: |
-          export DOCKER_HOST=tcp://localhost:2375
           docker run --rm hello-world

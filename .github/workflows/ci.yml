@@ -5,13 +5,11 @@ jobs:
   docker-test:
     runs-on: self-hosted
     services:
-      docker-dind:
+      docker:
         image: docker:dind
         ports:
           - 2375:2375
-        env:
-          DOCKER_TLS_CERTDIR: ""
-        options: --network host  # Используем хост-сеть для сервиса
+        options: --privileged --network host  # Используем хост-сеть для сервиса
     container:
       image: docker:cli
       options: --network host  # Подключаем основной контейнер к хост-сети

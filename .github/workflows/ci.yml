@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   docker-test:
-    runs-on: edu-self-hosted
+    runs-on: private-self-hosted
     services:
       docker-dind:
         image: docker:dind

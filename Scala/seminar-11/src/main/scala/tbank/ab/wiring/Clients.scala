@@ -8,6 +8,8 @@ import dev.profunktor.redis4cats.effect.Log.NoOp.instance
 import fs2.aws.s3.S3
 import io.laserdisc.pure.s3.tagless.Interpreter
 import io.lettuce.core.{ClientOptions, TimeoutOptions}
+import org.http4s.client.Client
+import org.http4s.ember.client.EmberClientBuilder
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
@@ -19,7 +21,8 @@ import java.time.Duration
 
 case class Clients()(using
   val s3Client: S3[IO],
-  val redisClient: RedisCommands[IO, AccessToken, TokenInfo]
+  val redisClient: RedisCommands[IO, AccessToken, TokenInfo],
+  val httpClient: Client[IO]
 )
 
 object Clients {
@@ -54,12 +57,19 @@ object Clients {
     Redis[IO].withOptions(redisConfig.uri, clientOptions, redisCodec)
   }
 
+  private def httpClientResource: Resource[IO, Client[IO]] = {
+    EmberClientBuilder
+      .default[IO]
+      .build
+  }
+
   def make(using config: AppConfig): Resource[IO, Clients] = {
     import config.given
 
     for {
       given S3[IO]                                    <- s3StreamResource
       given RedisCommands[IO, AccessToken, TokenInfo] <- redisResource
+      given Client[IO] <- httpClientResource
     } yield Clients()
   }
 }

@@ -10,7 +10,8 @@ final case class AppConfig()(using
   val s3: S3Config,
   val redis: RedisConfig,
   val animalsConsumer: KafkaConsumerConfig,
-  val animalsProducer: KafkaProducerConfig
+  val animalsProducer: KafkaProducerConfig,
+  val randomCatService: RandomCatServiceConfig
 )
 
 object AppConfig {
@@ -21,7 +22,8 @@ object AppConfig {
     s3: S3Config,
     redis: RedisConfig,
     animalsConsumer: KafkaConsumerConfig,
-    animalsProducer: KafkaProducerConfig
+    animalsProducer: KafkaProducerConfig,
+    randomCatService: RandomCatServiceConfig
   ) derives ConfigReader
 
   def load(source: ConfigSource): IO[AppConfig] =
@@ -34,7 +36,8 @@ object AppConfig {
           s3 = view.s3,
           redis = view.redis,
           animalsConsumer = view.animalsConsumer,
-          animalsProducer = view.animalsProducer
+          animalsProducer = view.animalsProducer,
+          randomCatService = view.randomCatService
         )
       )
 }

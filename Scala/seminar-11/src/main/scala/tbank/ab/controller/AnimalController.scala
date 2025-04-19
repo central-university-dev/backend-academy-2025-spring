@@ -47,8 +47,17 @@ private class AnimalController(
         }
       }
 
+  private val randomFact: ServerEndpoint[Any, IO] =
+      AnimalEndpoints.randomFact
+        .serverLogic(_ =>
+          animalService.randomCat().attempt.map(
+            _.left.map(_.getMessage)
+          )
+        )
+
+
   override val endpoints: List[ServerEndpoint[Fs2Streams[IO], IO]] =
-    List(animalDescription, animalInfo, updateAnimalInfo, allAnimals)
+    List(animalDescription, animalInfo, updateAnimalInfo, allAnimals, randomFact)
       .map(_.withTag("Animals"))
 }
 

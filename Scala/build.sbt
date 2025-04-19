@@ -190,6 +190,13 @@ lazy val `seminar-10` = project
       dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
+lazy val `seminar-11` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps,
+    scalacOptions += "-Ymacro-annotations"
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
 lazy val seminars = (project in file(".")).settings(
   name := "seminars"
 ).aggregate(
@@ -202,5 +209,6 @@ lazy val seminars = (project in file(".")).settings(
   `seminar-6`,
   `seminar-7`,
   `seminar-8`,
-  `seminar-10`
+  `seminar-10`,
+  `seminar-11`,
 )

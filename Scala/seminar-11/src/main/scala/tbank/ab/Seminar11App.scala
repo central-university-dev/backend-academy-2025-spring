@@ -19,7 +19,6 @@ object Seminar11App extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     application.useForever
       .as(ExitCode.Success)
-
   
   
   def application: Resource[IO, Unit] =

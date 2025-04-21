@@ -2,7 +2,6 @@ package tbank.ab.repository
 
 import cats.effect.*
 import cats.implicits.*
-import cats.tagless.{ApplyK, FunctorK}
 import doobie.*
 import doobie.implicits.*
 import fs2.Stream
@@ -11,7 +10,7 @@ import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
 import tbank.ab.domain.habitat.Habitat
 import tbank.ab.repository.model.AnimalInfoRepository
 
-trait AnimalRepository[F[_]] derives ApplyK {
+trait AnimalRepository[F[_]] {
   def getAll: Stream[F, AnimalId]
   def find(id: AnimalId): F[Option[AnimalInfo]]
   def update(id: AnimalId, info: AnimalInfo): F[AnimalInfo]

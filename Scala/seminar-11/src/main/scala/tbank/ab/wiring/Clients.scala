@@ -20,7 +20,8 @@ import tbank.ab.domain.auth.{AccessToken, TokenInfo}
 import tofu.logging.Logging
 import org.http4s.client.middleware.Logger
 import tbank.ab.domain.{RequestContext, RequestIO, SetupContext}
-import tofu.WithContext
+import cats.implicits.catsSyntaxApplicativeId
+import tofu.WithProvide
 
 import java.net.URI
 import java.time.Duration
@@ -33,10 +34,10 @@ case class Clients[F[_]]()(using
 
 object Clients {
 
-  def make[I[_]: Async, F[_] : Async](using config: AppConfig, logMake: Logging.Make[F]): Resource[I, Clients[F]] = {
+  def make[I[_]: Async, F[_] : Async](using config: AppConfig, logMake: Logging.Make[F], withProvide: WithProvide[F, I, RequestContext]): Resource[I, Clients[F]] = {
     import config.given
     
-    val setup = new SetupContext[I, F]()
+    val setup = SetupContext.make[I, F, RequestContext](RequestContext.create[I])
     
     def s3StreamResource(using s3Config: S3Config): Resource[I, S3[F]] = {
       val credentials = AwsBasicCredentials.create(s3Config.accessKey, s3Config.secretKey)
@@ -62,11 +63,11 @@ object Clients {
         )
         .build()
 
-    val redisCodec: RedisCodec[AccessToken, TokenInfo] =
-      Codecs.derive(RedisCodec.Utf8, AccessToken.stringAccessTokenEpi, TokenInfo.stringTokenInfoEpi)
+      val redisCodec: RedisCodec[AccessToken, TokenInfo] =
+        Codecs.derive(RedisCodec.Utf8, AccessToken.stringAccessTokenEpi, TokenInfo.stringTokenInfoEpi)
 
       Redis[F].withOptions(redisConfig.uri, clientOptions, redisCodec).mapK(setup.setupK)
-  }
+    }
     
     def httpClientResource(using Logging.Make[F]): Resource[I, Client[F]] = {
         val logger = Logging.Make[F].forService[Client[F]]

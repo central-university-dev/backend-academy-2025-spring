@@ -1,30 +1,31 @@
 package tbank.ab.db
 
-import cats.effect.{Async, IO, Resource}
+import cats.effect.{Async, Resource}
+import cats.tagless.ApplyK
 import doobie.Transactor
 import doobie.hikari.HikariTransactor
 import tbank.ab.config.DbConfig
 
-case class DatabaseModule(
-  transactor: Transactor[IO]
-)
+case class DatabaseModule[F[_]](
+  transactor: Transactor[F]
+) derives ApplyK
 
 object DatabaseModule {
 
-  def make(using config: DbConfig): DatabaseModule =
+  def make[F[_]](using config: DbConfig, F: Async[F]): DatabaseModule[F] =
     DatabaseModule(
-      defaultTransactor[IO](config)
+      defaultTransactor[F](config)
     )
 
-  def makeHikari(using config: DbConfig): Resource[IO, DatabaseModule] =
-    hikariTransactor[IO](config)
+  def makeHikari[F[_]](using config: DbConfig, F: Async[F]): Resource[F, DatabaseModule[F]] =
+    hikariTransactor[F](config)
       .map(DatabaseModule(_))
 
-  def makeH2: DatabaseModule =
-    make(using h2DbConf)
+  def makeH2[F[_]: Async]: DatabaseModule[F] =
+    make[F](using h2DbConf)
 
-  def makeH2Hikari: Resource[IO, DatabaseModule] =
-    makeHikari(using h2DbConf)
+  def makeH2Hikari[F[_]: Async]: Resource[F, DatabaseModule[F]] =
+    makeHikari[F](using h2DbConf)
 
   private val h2DbConf: DbConfig = DbConfig(
     driver = "org.h2.Driver",

@@ -8,6 +8,8 @@
     </appender>
 
     <logger name="tbank.ab" level="DEBUG"/>
+    <logger name="org.http4s.client" level="DEBUG"/>
+    <logger name="sttp.tapir.server.http4s" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

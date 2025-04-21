@@ -6,6 +6,7 @@ ThisBuild / scalaVersion := "3.3.5"
 
 val `cats-core-version`         = "2.13.0"
 val `cats-effect-version`       = "3.5.7"
+val `cats-tagless-version`      = "0.16.3"
 val `tapir-version`             = "1.11.13"
 val `http4s-version`            = "0.23.30"
 val `sttp-client3-version`      = "3.10.2"

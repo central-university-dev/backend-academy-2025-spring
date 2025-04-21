@@ -1,31 +1,32 @@
 package tbank.ab.wiring
 
-import cats.effect.IO
+import cats.effect.Async
+import cats.~>
 import tbank.ab.config.AppConfig
+import tbank.ab.domain.{RequestContext, RequestIO}
 import tbank.ab.service.{AnimalService, AuthService, ChatService, HabitatService, RandomCatService}
 import tofu.logging.Logging
 
-final case class Services()(using
-  val animalService: AnimalService[IO],
-  val authService: AuthService[IO],
-  val habitatService: HabitatService[IO],
-  val chatService: ChatService[IO],
-  val randomCatService: RandomCatService[IO]
+final case class Services[I[_], F[_]]()(using
+  val animalService: AnimalService[F],
+  val authService: AuthService[F],
+  val habitatService: HabitatService[F],
+  val chatService: ChatService[F],
+  val randomCatService: RandomCatService[F]
 )
 
 object Services:
-  def make(using config: AppConfig, repos: Repositories, clients: Clients): Services = {
+  def make[I[_], F[_]: Async](using config: AppConfig, repos: Repositories[F], clients: Clients[F], logging: Logging.Make[F]): Services[I, F] = {
     import clients.given
     import config.given
     import repos.given
-
-    given Logging.Make[IO] = Logging.Make.plain[IO]
     
-    given AnimalService[IO]  = AnimalService.make
-    given AuthService[IO]    = AuthService.make
-    given HabitatService[IO] = HabitatService.make
-    given ChatService[IO]    = ChatService.make
-    given RandomCatService[IO] = RandomCatService.make
-
+    
+    given AuthService[F]    = AuthService.make[F]
+    given HabitatService[F] = HabitatService.make[F]
+    given RandomCatService[F] = RandomCatService.make[F]
+    given AnimalService[F] = AnimalService.make[I, F]
+    given ChatService[F]    = ChatService.make[F]
+    
     Services()
   }

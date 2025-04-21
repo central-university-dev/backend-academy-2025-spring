@@ -1,23 +1,24 @@
 package tbank.ab.controller
 
-import cats.effect.IO
+import cats.effect.Sync
 import cats.syntax.either.given
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.tapir.*
 import sttp.tapir.server.ServerEndpoint
 import tbank.ab.controller.endpoints.AnimalEndpoints
 import tbank.ab.service.{AnimalService, AuthService}
+import cats.implicits.*
 
-private class AnimalController(
-  animalService: AnimalService[IO],
-  authService: AuthService[IO]
-) extends Controller[IO] {
+private class AnimalController[F[_]: Sync](
+  animalService: AnimalService[F],
+  authService: AuthService[F]
+) extends Controller[F] {
 
-  private val allAnimals: ServerEndpoint[Fs2Streams[IO], IO] =
+  private val allAnimals: ServerEndpoint[Fs2Streams[F], F] =
     AnimalEndpoints.allAnimals
       .serverLogicSuccessPure(_ => animalService.allAnimals)
 
-  private val animalDescription: ServerEndpoint[Any, IO] =
+  private val animalDescription: ServerEndpoint[Any, F] =
     AnimalEndpoints.animalDescription
       .serverLogic { id =>
         for
@@ -26,7 +27,7 @@ private class AnimalController(
         yield response
       }
 
-  private val animalInfo: ServerEndpoint[Any, IO] =
+  private val animalInfo: ServerEndpoint[Any, F] =
     AnimalEndpoints.animalInfo
       .serverLogic { id =>
         for
@@ -35,7 +36,7 @@ private class AnimalController(
         yield response
       }
 
-  private val updateAnimalInfo: ServerEndpoint[Any, IO] =
+  private val updateAnimalInfo: ServerEndpoint[Any, F] =
     AnimalEndpoints.updateAnimalInfoEndpoint
       .serverSecurityLogic(userpass =>
         for out <- authService.login(userpass)
@@ -47,7 +48,7 @@ private class AnimalController(
         }
       }
 
-  private val randomFact: ServerEndpoint[Any, IO] =
+  private val randomFact: ServerEndpoint[Any, F] =
       AnimalEndpoints.randomFact
         .serverLogic(_ =>
           animalService.randomCat().attempt.map(
@@ -56,12 +57,12 @@ private class AnimalController(
         )
 
 
-  override val endpoints: List[ServerEndpoint[Fs2Streams[IO], IO]] =
+  override val endpoints: List[ServerEndpoint[Fs2Streams[F], F]] =
     List(animalDescription, animalInfo, updateAnimalInfo, allAnimals, randomFact)
       .map(_.withTag("Animals"))
 }
 
 object AnimalController {
-  def make(using animalService: AnimalService[IO], authService: AuthService[IO]): Controller[IO] =
+  def make[F[_]: Sync](using animalService: AnimalService[F], authService: AuthService[F]): Controller[F] =
     new AnimalController(animalService, authService)
 }

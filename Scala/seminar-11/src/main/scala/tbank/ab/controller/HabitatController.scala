@@ -1,7 +1,7 @@
 package tbank.ab.controller
 
 import cats.data.EitherT
-import cats.effect.IO
+import cats.effect.Sync
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.model.StatusCode
 import sttp.tapir.*
@@ -9,13 +9,14 @@ import sttp.tapir.server.ServerEndpoint
 import tbank.ab.controller.endpoints.HabitatEndpoints
 import tbank.ab.domain.auth.AccessToken
 import tbank.ab.service.{AuthService, HabitatService}
+import cats.implicits.*
 
-private class HabitatController(
-  habitatService: HabitatService[IO],
-  authService: AuthService[IO]
-) extends Controller[IO]:
+private class HabitatController[F[_]: Sync](
+  habitatService: HabitatService[F],
+  authService: AuthService[F]
+) extends Controller[F]:
 
-  private val animalImage: ServerEndpoint[Any, IO] =
+  private val animalImage: ServerEndpoint[Any, F] =
     HabitatEndpoints.animalImage
       .serverLogic { animalId =>
         for
@@ -27,7 +28,7 @@ private class HabitatController(
         yield response
       }
 
-  private val uploadAnimalImage: ServerEndpoint[Any with Fs2Streams[IO], IO] =
+  private val uploadAnimalImage: ServerEndpoint[Any with Fs2Streams[F], F] =
     HabitatEndpoints.uploadAnimalImage
       .serverSecurityLogic {
         case (Some(bearerToken), _) =>
@@ -39,11 +40,10 @@ private class HabitatController(
             .leftMap(_ => ("Failed to authenticate", StatusCode.Unauthorized))
             .value
         case _ =>
-          IO(
             Left(
               ("Failed to authenticate", StatusCode.Unauthorized)
-            )
-          )
+            ).pure[F]
+          
       }
       .serverLogic { _ =>
         { case (animalId, image) =>
@@ -53,13 +53,13 @@ private class HabitatController(
         }
       }
 
-  override val endpoints: List[ServerEndpoint[Any with Fs2Streams[IO], IO]] =
+  override val endpoints: List[ServerEndpoint[Any with Fs2Streams[F], F]] =
     List(animalImage, uploadAnimalImage)
       .map(_.withTag("Habitat"))
 
 object HabitatController:
-  def make(using
-    habitatService: HabitatService[IO],
-    authService: AuthService[IO]
-  ): Controller[IO] =
+  def make[F[_]: Sync](using
+    habitatService: HabitatService[F],
+    authService: AuthService[F]
+  ): Controller[F] =
     new HabitatController(habitatService, authService)

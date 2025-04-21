@@ -1,9 +1,11 @@
 package tbank.ab.repository
 
-import cats.effect.{Clock, IO}
+import cats.Monad
+import cats.effect.{Clock}
 import dev.profunktor.redis4cats.RedisCommands
 import tbank.ab.config.AuthConfig
 import tbank.ab.domain.auth.{AccessToken, TokenInfo}
+import cats.implicits.*
 
 trait AuthRepository[F[_]] {
   def find(token: AccessToken): F[Option[AccessToken]]
@@ -12,26 +14,26 @@ trait AuthRepository[F[_]] {
 
 object AuthRepository {
 
-  def make(using
+  def make[F[_]: Monad](using
     config: AuthConfig,
-    repo: RedisCommands[IO, AccessToken, TokenInfo],
-    clock: Clock[IO]
-  ): AuthRepository[IO] =
-    new RedisImpl
+    repo: RedisCommands[F, AccessToken, TokenInfo],
+    clock: Clock[F]
+  ): AuthRepository[F] =
+    new RedisImpl[F]
 
-  final private class RedisImpl(using
-    repo: RedisCommands[IO, AccessToken, TokenInfo],
+  final private class RedisImpl[F[_]: Monad](using
+    repo: RedisCommands[F, AccessToken, TokenInfo],
     config: AuthConfig,
-    clock: Clock[IO]
-  ) extends AuthRepository[IO] {
+    clock: Clock[F]
+  ) extends AuthRepository[F] {
 
-    override def find(token: AccessToken): IO[Option[AccessToken]] =
+    override def find(token: AccessToken): F[Option[AccessToken]] =
       for {
         tokenInfo <- repo.get(token)
         now       <- clock.realTimeInstant
       } yield Option.when(tokenInfo.exists(_.expiresIn.isAfter(now)))(token)
 
-    override def set(token: AccessToken): IO[Unit] =
+    override def set(token: AccessToken): F[Unit] =
       for {
         now <- clock.realTimeInstant
         expiresIn = now.plusSeconds(config.maxAge)

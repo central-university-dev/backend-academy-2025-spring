@@ -1,6 +1,5 @@
 package tbank.ab.controller.endpoints
 
-import cats.effect.IO
 import sttp.capabilities
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.model.StatusCode
@@ -10,12 +9,12 @@ import sttp.tapir.model.UsernamePassword
 import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
 
 object AnimalEndpoints {
-  val allAnimals: Endpoint[Unit, Unit, Unit, fs2.Stream[IO, Byte], Fs2Streams[IO]] =
+  def allAnimals[F[_]]: Endpoint[Unit, Unit, Unit, fs2.Stream[F, Byte], Fs2Streams[F]] =
     endpoint.get
       .summary("returns all animals ids")
       .in("animal")
       .out(
-        streamBody[Fs2Streams[IO], List[AnimalId]](Fs2Streams[IO])(
+        streamBody[Fs2Streams[F], List[AnimalId]](Fs2Streams[F])(
           Schema.derived[List[AnimalId]],
           CodecFormat.Json(),
           None

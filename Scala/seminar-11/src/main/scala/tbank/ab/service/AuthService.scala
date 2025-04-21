@@ -1,12 +1,12 @@
 package tbank.ab.service
 
-import cats.effect.IO
+import cats.Monad
 import sttp.tapir.model.UsernamePassword
 import tbank.ab.config.AuthConfig
 import tbank.ab.domain.auth.AccessToken
 import tbank.ab.domain.auth.error.AuthError
 import tbank.ab.repository.AuthRepository
-
+import cats.implicits.*
 import java.util.Base64
 
 trait AuthService[F[_]]:
@@ -16,11 +16,11 @@ trait AuthService[F[_]]:
 
 object AuthService:
 
-  final private class Impl(repo: AuthRepository[IO], config: AuthConfig) extends AuthService[IO]:
+  final private class Impl[F[_]](repo: AuthRepository[F], config: AuthConfig)(using F: Monad[F]) extends AuthService[F]:
     override def login(
       userpass: UsernamePassword
-    ): IO[Either[AuthError, Unit]] =
-      IO.pure {
+    ): F[Either[AuthError, Unit]] =
+      F.pure {
         Either.cond(
           userpass.username == config.login &&
           userpass.password.contains(config.password),
@@ -37,17 +37,17 @@ object AuthService:
         )
       )
 
-    override def generateToken(userpass: UsernamePassword): IO[AccessToken] =
+    override def generateToken(userpass: UsernamePassword): F[AccessToken] =
       for
-        token <- IO.pure(base64(userpass))
+        token <- F.pure(base64(userpass))
         _     <- repo.set(token)
       yield token
 
-    override def authenticate(token: AccessToken): IO[Either[AuthError, Unit]] =
+    override def authenticate(token: AccessToken): F[Either[AuthError, Unit]] =
       for token <- repo.find(token)
       yield token
         .map(_ => ())
         .toRight(AuthError())
 
-  def make(using config: AuthConfig, repo: AuthRepository[IO]): AuthService[IO] =
+  def make[F[_]: Monad](using config: AuthConfig, repo: AuthRepository[F]): AuthService[F] =
     Impl(repo, config)

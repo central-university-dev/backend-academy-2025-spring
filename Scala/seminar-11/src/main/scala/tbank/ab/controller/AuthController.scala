@@ -1,6 +1,6 @@
 package tbank.ab.controller
 
-import cats.effect.IO
+import cats.effect.Sync
 import cats.syntax.either.given
 import sttp.model.headers.CookieValueWithMeta
 import sttp.tapir.model.UsernamePassword
@@ -8,15 +8,16 @@ import sttp.tapir.server.ServerEndpoint
 import tbank.ab.config.AuthConfig
 import tbank.ab.controller.endpoints.AuthEndpoints
 import tbank.ab.service.AuthService
+import cats.implicits.*
 
-private class AuthController(
-  authService: AuthService[IO],
+private class AuthController[F[_]: Sync](
+  authService: AuthService[F],
   config: AuthConfig
-) extends Controller[IO]:
+) extends Controller[F]:
 
   private def authenticate(
     userpass: UsernamePassword
-  ): IO[Either[String, UsernamePassword]] =
+  ): F[Either[String, UsernamePassword]] =
     for out <- authService.login(userpass)
     yield out
       .map(_ => userpass)
@@ -42,10 +43,10 @@ private class AuthController(
           }
       }
 
-  override def endpoints: List[ServerEndpoint[Any, IO]] =
+  override def endpoints: List[ServerEndpoint[Any, F]] =
     List(tokenAuth, cookieAuth)
       .map(_.withTag("Auth"))
 
 object AuthController:
-  def make(using authService: AuthService[IO], config: AuthConfig): Controller[IO] =
+  def make[F[_]: Sync](using authService: AuthService[F], config: AuthConfig): Controller[F] =
     new AuthController(authService, config)

@@ -2,6 +2,7 @@ package tbank.ab.repository
 
 import cats.effect.*
 import cats.implicits.*
+import cats.tagless.{ApplyK, FunctorK}
 import doobie.*
 import doobie.implicits.*
 import fs2.Stream
@@ -10,7 +11,7 @@ import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
 import tbank.ab.domain.habitat.Habitat
 import tbank.ab.repository.model.AnimalInfoRepository
 
-trait AnimalRepository[F[_]] {
+trait AnimalRepository[F[_]] derives ApplyK {
   def getAll: Stream[F, AnimalId]
   def find(id: AnimalId): F[Option[AnimalInfo]]
   def update(id: AnimalId, info: AnimalInfo): F[AnimalInfo]
@@ -18,17 +19,17 @@ trait AnimalRepository[F[_]] {
 
 object AnimalRepository {
 
-  private class Impl(
-    transactor: Transactor[IO]
-  ) extends AnimalRepository[IO] {
-    override def getAll: Stream[IO, AnimalId] =
+  private class Impl[F[_]: Async](
+    transactor: Transactor[F]
+  ) extends AnimalRepository[F] {
+    override def getAll: Stream[F, AnimalId] =
       sql"select name from animal_info"
         .query[String]
         .map(AnimalId.apply)
         .stream
         .transact(transactor)
 
-    override def find(id: AnimalId): IO[Option[AnimalInfo]] =
+    override def find(id: AnimalId): F[Option[AnimalInfo]] =
       (
         for {
           animalId <- sql"select id from animal_info where name = ${id.toString}".query[Long].unique
@@ -45,9 +46,9 @@ object AnimalRepository {
             voice = Some(voices)
           )
         )
-      ).transact[IO](transactor)
+      ).transact[F](transactor)
 
-    override def update(id: AnimalId, info: AnimalInfo): IO[AnimalInfo] = (
+    override def update(id: AnimalId, info: AnimalInfo): F[AnimalInfo] = (
       for {
         // TODO: Move query and update to object RepositoryQuery (and reuse)
         animalId <- sql"select id from animal_info where name = ${id.toString}".query[Long].unique
@@ -62,10 +63,10 @@ object AnimalRepository {
          """.update.run
       } yield ()
     )
-      .transact[IO](transactor)
+      .transact[F](transactor)
       .as(info)
   }
 
-  def make(using database: DatabaseModule): AnimalRepository[IO] =
+  def make[F[_]: Async](using database: DatabaseModule[F]): AnimalRepository[F] =
     new Impl(database.transactor)
 }

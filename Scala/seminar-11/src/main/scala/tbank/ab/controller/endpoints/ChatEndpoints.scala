@@ -1,6 +1,5 @@
 package tbank.ab.controller.endpoints
 
-import cats.effect.IO
 import fs2.Pipe
 import sttp.capabilities
 import sttp.capabilities.WebSockets
@@ -13,8 +12,8 @@ import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
 
 object ChatEndpoints:
 
-  val animalChat =
+  def animalChat[F[_]] =
     endpoint
       .summary("Chat with animal")
       .in("animal" / path[AnimalId]("animal-id") / "chat")
-      .out(webSocketBody[String, CodecFormat.TextPlain, String, CodecFormat.TextPlain](Fs2Streams[IO]))
+      .out(webSocketBody[String, CodecFormat.TextPlain, String, CodecFormat.TextPlain](Fs2Streams[F]))

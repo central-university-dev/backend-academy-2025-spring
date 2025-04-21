@@ -1,6 +1,5 @@
 package tbank.ab.controller.endpoints
 
-import cats.effect.IO
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.model.{HeaderNames, StatusCode}
 import sttp.model.headers.CookieValueWithMeta
@@ -27,12 +26,12 @@ object HabitatEndpoints {
       )
       .errorOut(stringBody.and(statusCode(StatusCode.NotFound)))
 
-  val uploadAnimalImage: Endpoint[
+  def uploadAnimalImage[F[_]]: Endpoint[
     (Option[AccessToken], Option[CookieValueWithMeta]),
-    (AnimalId, fs2.Stream[IO, Byte]),
+    (AnimalId, fs2.Stream[F, Byte]),
     (String, StatusCode),
     Unit,
-    Any with Fs2Streams[IO]
+    Any with Fs2Streams[F]
   ] =
     endpoint.put
       .summary("upload animal image in its habitat")
@@ -41,7 +40,7 @@ object HabitatEndpoints {
       .securityIn(setCookieOpt("session"))
       .in(query[AnimalId]("animal-id"))
       .in(
-        streamBinaryBody(Fs2Streams[IO])(CodecFormat.OctetStream())
+        streamBinaryBody(Fs2Streams[F])(CodecFormat.OctetStream())
       )
       .errorOut(stringBody.and(statusCode))
 }

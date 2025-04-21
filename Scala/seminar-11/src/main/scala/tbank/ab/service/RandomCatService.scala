@@ -1,22 +1,38 @@
 package tbank.ab.service
 
-import cats.effect.IO
+import cats.Monad
+import cats.effect.Async
 import org.http4s.client.Client
 import tbank.ab.config.RandomCatServiceConfig
 import tofu.logging.LoggingCompanion
 import tofu.syntax.logging.*
+import cats.implicits.*
+import org.http4s.EntityDecoder
 
 trait RandomCatService[F[_]] {
     def randomCatFact(): F[String]
 }
 
 object RandomCatService extends LoggingCompanion[RandomCatService]{
-    def make(using 
-            httpClient: Client[IO],
+    def make[F[_]: Async](using
+            httpClient: Client[F],
             config: RandomCatServiceConfig,
-            logging: RandomCatService.Log[IO]
-            ): RandomCatService[IO] = new RandomCatService[IO] {
-        def randomCatFact() =
-          debug"Searching for random fact..." *> httpClient.expect[String](config.randomCatFactUri)
+            logging: RandomCatService.Log[F]
+            ): RandomCatService[F] = {
+      
+      new Impl[F](httpClient, config)
     }
+
+    private class Impl[F[_]: Async](
+                        httpClient: Client[F],
+                        config: RandomCatServiceConfig)(using logging: RandomCatService.Log[F])
+      extends RandomCatService[F] {
+          def randomCatFact() =
+            debug"Searching for random fact..." *> httpClient.expect[String](config.randomCatFactUri)
+
+          given EntityDecoder[F, String] = EntityDecoder.text[F]
+      }
+
+
+
 }

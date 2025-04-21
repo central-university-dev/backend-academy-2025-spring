@@ -1,22 +1,28 @@
 package tbank.ab.wiring
 
-import cats.effect.IO
+import cats.Applicative
+import cats.arrow.FunctionK
+import cats.effect.Async
 import tbank.ab.config.AppConfig
 import tbank.ab.db.DatabaseModule
 import tbank.ab.repository.{AnimalRepository, AuthRepository}
+import cats.implicits.*
+import tofu.lift.Lift
+import cats.tagless.syntax.functorK.*
 
-final case class Repositories()(using
-  val animalRepo: AnimalRepository[IO],
-  val authRepo: AuthRepository[IO]
+final case class Repositories[F[_]]()(using
+                                      val animalRepo: AnimalRepository[F],
+                                      val authRepo: AuthRepository[F]
 )
 
 object Repositories:
-  def make(using db: DatabaseModule, config: AppConfig, clients: Clients): IO[Repositories] = {
+  def make[I[_]: Applicative, F[_]: Async](using db: DatabaseModule[I], config: AppConfig, clients: Clients[F], fk: FunctionK[I, F]): I[Repositories[F]] = {
     import clients.given
     import config.given
 
-    for {
-      given AnimalRepository[IO] <- IO(AnimalRepository.make)
-      given AuthRepository[IO] = AuthRepository.make
-    } yield Repositories()
+    given DatabaseModule[F] = db.mapK(fk)
+    given AnimalRepository[F] = AnimalRepository.make[F]
+    given AuthRepository[F] = AuthRepository.make[F]
+
+    Repositories().pure[I]
   }

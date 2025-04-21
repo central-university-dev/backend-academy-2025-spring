@@ -1,22 +1,22 @@
 package tbank.ab.wiring
 
-import cats.effect.IO
+import cats.Monad
 import sttp.capabilities.WebSockets
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.tapir.server.ServerEndpoint
 import tbank.ab.controller.{Controller, ProbeController}
 
-final class MonitoringApi(
-  probeController: Controller[IO]
-) extends Controller[IO] {
-  def endpoints: List[ServerEndpoint[Fs2Streams[IO] & WebSockets, IO]] =
+final class MonitoringApi[F[_]](
+  probeController: Controller[F]
+) extends Controller[F] {
+  def endpoints: List[ServerEndpoint[Fs2Streams[F] & WebSockets, F]] =
     probeController.endpoints
 }
 
 object MonitoringApi {
 
-  def make: MonitoringApi = {
-    val probeController: Controller[IO] = ProbeController.make
+  def make[F[_]: Monad]: MonitoringApi[F] = {
+    val probeController: Controller[F] = ProbeController.make[F]
 
     MonitoringApi(probeController)
   }

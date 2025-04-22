@@ -1,38 +1,28 @@
 package tbank.ab.domain
 
+import cats.{~>, FlatMap, Functor}
 import cats.data.ReaderT
 import cats.effect.IO
+import cats.implicits.*
 import cats.syntax.flatMap.*
-import cats.{Applicative, FlatMap, Functor, ~>}
 import tofu.WithProvide
+import tofu.generate.GenUUID
 import tofu.logging.Loggable
 import tofu.logging.derivation.*
 import tofu.syntax.funk.*
-import cats.implicits.*
-import tofu.generate.GenUUID
 
 import java.util.UUID
 
 type RequestIO[A] = ReaderT[IO, RequestContext, A]
 
-case class RequestContext(traceId: String) extends LogContext derives Loggable
+case class RequestContext(traceId: UUID) extends LogContext derives Loggable
 
 object RequestContext {
 
-  def create[F[_]: GenUUID: Functor]: F[RequestContext] =
-    GenUUID[F].randomUUID.map(u => RequestContext.apply(u.toString))
-  
-}
-
-trait SetupContext[I[_], F[_]] {
-  def setup[A](fa: F[A]): I[A]
-
-  def setupK: F ~> I = funK[F, I](setup)
-}
-
-object SetupContext {
-  def make[I[_]: FlatMap, F[_], Ctx](from: I[Ctx])(using withProvide: WithProvide[F, I, Ctx]): SetupContext[I, F] =
-    new SetupContext[I, F] {
-      override def setup[A](fa: F[A]): I[A] = from >>= withProvide.runContext(fa)
+  def setupK[I[_]: FlatMap: GenUUID, F[_]](using withProvide: WithProvide[F, I, RequestContext]): F ~> I =
+    new (F ~> I) {
+      override def apply[A](fa: F[A]): I[A] =
+        GenUUID[I].randomUUID.flatMap(uuid => withProvide.runContext(fa)(RequestContext(uuid)))
     }
+
 }

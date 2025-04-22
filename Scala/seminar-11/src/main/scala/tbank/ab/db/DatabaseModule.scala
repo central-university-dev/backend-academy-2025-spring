@@ -1,20 +1,19 @@
 package tbank.ab.db
 
-import cats.effect.{Async, MonadCancelThrow, Resource}
 import cats.~>
+import cats.effect.{Async, MonadCancelThrow, Resource}
 import doobie.Transactor
 import doobie.hikari.HikariTransactor
 import tbank.ab.config.DbConfig
 
 case class DatabaseModule[F[_]](
   transactor: Transactor[F]
-                               )
+)
 
 object DatabaseModule {
 
   def mapK[F[_]: MonadCancelThrow, G[_]: MonadCancelThrow](fa: DatabaseModule[F])(fk: F ~> G): DatabaseModule[G] =
     DatabaseModule(fa.transactor.mapK(fk))
-
 
   def make[F[_]](using config: DbConfig, F: Async[F]): DatabaseModule[F] =
     DatabaseModule(
@@ -24,7 +23,6 @@ object DatabaseModule {
   def makeHikari[F[_]](using config: DbConfig, F: Async[F]): Resource[F, DatabaseModule[F]] =
     hikariTransactor[F](config)
       .map(DatabaseModule(_))
-
 
   def makeH2[F[_]: Async]: DatabaseModule[F] =
     make[F](using h2DbConf)

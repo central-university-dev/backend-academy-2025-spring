@@ -1,11 +1,11 @@
 package tbank.ab.repository
 
 import cats.Monad
-import cats.effect.{Clock}
+import cats.effect.Clock
+import cats.implicits.*
 import dev.profunktor.redis4cats.RedisCommands
 import tbank.ab.config.AuthConfig
 import tbank.ab.domain.auth.{AccessToken, TokenInfo}
-import cats.implicits.*
 
 trait AuthRepository[F[_]] {
   def find(token: AccessToken): F[Option[AccessToken]]

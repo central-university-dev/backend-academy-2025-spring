@@ -1,12 +1,12 @@
 package tbank.ab.service
 
 import cats.Monad
+import cats.implicits.*
 import sttp.tapir.model.UsernamePassword
 import tbank.ab.config.AuthConfig
 import tbank.ab.domain.auth.AccessToken
 import tbank.ab.domain.auth.error.AuthError
 import tbank.ab.repository.AuthRepository
-import cats.implicits.*
 import tofu.logging.{Logging, LoggingCompanion}
 
 import java.util.Base64
@@ -18,7 +18,10 @@ trait AuthService[F[_]]:
 
 object AuthService extends LoggingCompanion[AuthService]:
 
-  final private class Impl[F[_]](repo: AuthRepository[F], config: AuthConfig)(using F: Monad[F], logging: AuthService.Log[F]) extends AuthService[F]:
+  final private class Impl[F[_]](repo: AuthRepository[F], config: AuthConfig)(using
+    F: Monad[F],
+    logging: AuthService.Log[F]
+  ) extends AuthService[F]:
     override def login(
       userpass: UsernamePassword
     ): F[Either[AuthError, Unit]] =

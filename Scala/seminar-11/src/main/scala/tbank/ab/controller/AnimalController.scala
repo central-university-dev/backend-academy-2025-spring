@@ -1,15 +1,15 @@
 package tbank.ab.controller
 
-import cats.effect.Sync
+import cats.MonadThrow
+import cats.implicits.*
 import cats.syntax.either.given
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.tapir.*
 import sttp.tapir.server.ServerEndpoint
 import tbank.ab.controller.endpoints.AnimalEndpoints
 import tbank.ab.service.{AnimalService, AuthService}
-import cats.implicits.*
 
-private class AnimalController[F[_]: Sync](
+private class AnimalController[F[_]: MonadThrow](
   animalService: AnimalService[F],
   authService: AuthService[F]
 ) extends Controller[F] {
@@ -49,13 +49,12 @@ private class AnimalController[F[_]: Sync](
       }
 
   private val randomFact: ServerEndpoint[Any, F] =
-      AnimalEndpoints.randomFact
-        .serverLogic(_ =>
-          animalService.randomCat().attempt.map(
-            _.left.map(_.getMessage)
-          )
+    AnimalEndpoints.randomFact
+      .serverLogic(_ =>
+        animalService.randomCat().attempt.map(
+          _.left.map(_.getMessage)
         )
-
+      )
 
   override val endpoints: List[ServerEndpoint[Fs2Streams[F], F]] =
     List(animalDescription, animalInfo, updateAnimalInfo, allAnimals, randomFact)
@@ -63,6 +62,6 @@ private class AnimalController[F[_]: Sync](
 }
 
 object AnimalController {
-  def make[F[_]: Sync](using animalService: AnimalService[F], authService: AuthService[F]): Controller[F] =
+  def make[F[_]: MonadThrow](using animalService: AnimalService[F], authService: AuthService[F]): Controller[F] =
     new AnimalController(animalService, authService)
 }

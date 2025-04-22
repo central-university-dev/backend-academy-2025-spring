@@ -1,6 +1,7 @@
 package tbank.ab.controller
 
-import cats.effect.Sync
+import cats.MonadThrow
+import cats.implicits.*
 import cats.syntax.either.given
 import sttp.model.headers.CookieValueWithMeta
 import sttp.tapir.model.UsernamePassword
@@ -8,9 +9,8 @@ import sttp.tapir.server.ServerEndpoint
 import tbank.ab.config.AuthConfig
 import tbank.ab.controller.endpoints.AuthEndpoints
 import tbank.ab.service.AuthService
-import cats.implicits.*
 
-private class AuthController[F[_]: Sync](
+private class AuthController[F[_]: MonadThrow](
   authService: AuthService[F],
   config: AuthConfig
 ) extends Controller[F]:
@@ -48,5 +48,5 @@ private class AuthController[F[_]: Sync](
       .map(_.withTag("Auth"))
 
 object AuthController:
-  def make[F[_]: Sync](using authService: AuthService[F], config: AuthConfig): Controller[F] =
+  def make[F[_]: MonadThrow](using authService: AuthService[F], config: AuthConfig): Controller[F] =
     new AuthController(authService, config)

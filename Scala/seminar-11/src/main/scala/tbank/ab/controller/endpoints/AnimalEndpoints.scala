@@ -50,7 +50,6 @@ object AnimalEndpoints {
       .out(jsonBody[AnimalInfo])
       .errorOut(stringBody.and(statusCode(StatusCode.Unauthorized)))
 
-
   val randomFact: Endpoint[Unit, Unit, String, String, Any] =
     endpoint.get
       .summary("random cat fact")

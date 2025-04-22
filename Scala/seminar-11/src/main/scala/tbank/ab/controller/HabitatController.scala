@@ -1,7 +1,8 @@
 package tbank.ab.controller
 
+import cats.MonadThrow
 import cats.data.EitherT
-import cats.effect.Sync
+import cats.implicits.*
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.model.StatusCode
 import sttp.tapir.*
@@ -9,9 +10,8 @@ import sttp.tapir.server.ServerEndpoint
 import tbank.ab.controller.endpoints.HabitatEndpoints
 import tbank.ab.domain.auth.AccessToken
 import tbank.ab.service.{AuthService, HabitatService}
-import cats.implicits.*
 
-private class HabitatController[F[_]: Sync](
+private class HabitatController[F[_]: MonadThrow](
   habitatService: HabitatService[F],
   authService: AuthService[F]
 ) extends Controller[F]:
@@ -40,10 +40,10 @@ private class HabitatController[F[_]: Sync](
             .leftMap(_ => ("Failed to authenticate", StatusCode.Unauthorized))
             .value
         case _ =>
-            Left(
-              ("Failed to authenticate", StatusCode.Unauthorized)
-            ).pure[F]
-          
+          Left(
+            ("Failed to authenticate", StatusCode.Unauthorized)
+          ).pure[F]
+
       }
       .serverLogic { _ =>
         { case (animalId, image) =>
@@ -58,7 +58,7 @@ private class HabitatController[F[_]: Sync](
       .map(_.withTag("Habitat"))
 
 object HabitatController:
-  def make[F[_]: Sync](using
+  def make[F[_]: MonadThrow](using
     habitatService: HabitatService[F],
     authService: AuthService[F]
   ): Controller[F] =

@@ -15,12 +15,12 @@ import java.util.UUID
 
 type RequestIO[A] = ReaderT[IO, RequestContext, A]
 
-case class RequestContext(traceId: UUID) extends LogContext derives Loggable
+case class RequestContext(traceId: String) extends LogContext derives Loggable
 
 object RequestContext {
 
   def create[F[_]: GenUUID: Functor]: F[RequestContext] =
-    GenUUID[F].randomUUID.map(RequestContext.apply)
+    GenUUID[F].randomUUID.map(u => RequestContext.apply(u.toString))
   
 }
 

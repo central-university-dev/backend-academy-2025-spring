@@ -7,3 +7,4 @@ import sttp.tapir.server.ServerEndpoint
 trait Controller[F[_]] {
   def endpoints: List[ServerEndpoint[Fs2Streams[F] & WebSockets, F]]
 }
+  

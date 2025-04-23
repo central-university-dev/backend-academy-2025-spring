@@ -1,8 +1,8 @@
 package tbank.ab.wiring
 
-import cats.Applicative
+import cats.{~>, Applicative}
 import cats.arrow.FunctionK
-import cats.effect.{Async, MonadCancelThrow}
+import cats.effect.{Async, Sync, MonadCancelThrow}
 import cats.implicits.*
 import cats.tagless.syntax.functorK.*
 import tbank.ab.config.AppConfig
@@ -18,18 +18,21 @@ final case class Repositories[F[_]]()(using
 )
 
 object Repositories:
-  def make[I[_]: MonadCancelThrow, F[_]: Async](using
+  def make[I[_]: Sync, F[_]: Async](using
     db: DatabaseModule[I],
     config: AppConfig,
     clients: Clients[F],
-    withProvide: WithProvide[F, I, RequestContext]
+    fk: I ~> F
   ): I[Repositories[F]] = {
     import clients.given
     import config.given
 
-    given DatabaseModule[F]   = DatabaseModule.mapK[I, F](db)(withProvide.liftF)
-    given AnimalRepository[F] = AnimalRepository.make[F]
-    given AuthRepository[F]   = AuthRepository.make[F]
+    for {
+      given AuthRepository[F]   <- AuthRepository.make[I, F]
+      given DatabaseModule[F]   = DatabaseModule.mapK[I, F](db)(fk)
+      given AnimalRepository[F] = AnimalRepository.make[F]
+    } yield Repositories()
+    
 
-    Repositories().pure[I]
+    
   }

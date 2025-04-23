@@ -1,5 +1,6 @@
 package tbank.ab.wiring
 
+import cats.~>
 import cats.effect.{Async, Resource}
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.codecs.Codecs
@@ -24,8 +25,6 @@ import java.net.URI
 import java.time.Duration
 
 case class Clients[F[_]]()(using
-  val s3Client: S3[F],
-  val redisClient: RedisCommands[F, AccessToken, TokenInfo],
   val httpClient: Client[F]
 )
 
@@ -38,20 +37,20 @@ object Clients {
   ): Resource[I, Clients[F]] = {
     import config.given
 
-    def s3StreamResource(using s3Config: S3Config): Resource[I, S3[F]] = {
+    def s3StreamResource(using s3Config: S3Config): Resource[I, S3[I]] = {
       val credentials = AwsBasicCredentials.create(s3Config.accessKey, s3Config.secretKey)
 
-      Interpreter[F].S3AsyncClientOpResource(
+      Interpreter[I].S3AsyncClientOpResource(
         S3AsyncClient
           .builder()
           .forcePathStyle(true)
           .credentialsProvider(StaticCredentialsProvider.create(credentials))
           .endpointOverride(URI.create(s3Config.uri))
           .region(Region.US_EAST_1)
-      ).mapK(RequestContext.setupK[I, F]).map(S3.create[F])
+      ).map(S3.create[I])
     }
 
-    def redisResource(using redisConfig: RedisConfig): Resource[I, RedisCommands[F, AccessToken, TokenInfo]] = {
+    def redisResource(using redisConfig: RedisConfig): Resource[I, RedisCommands[I, AccessToken, TokenInfo]] = {
       val clientOptions = ClientOptions.builder()
         .autoReconnect(false)
         .pingBeforeActivateConnection(true)
@@ -65,7 +64,7 @@ object Clients {
       val redisCodec: RedisCodec[AccessToken, TokenInfo] =
         Codecs.derive(RedisCodec.Utf8, AccessToken.stringAccessTokenEpi, TokenInfo.stringTokenInfoEpi)
 
-      Redis[F].withOptions(redisConfig.uri, clientOptions, redisCodec).mapK(RequestContext.setupK[I, F])
+      Redis[I].withOptions(redisConfig.uri, clientOptions, redisCodec)
     }
 
     def httpClientResource(using Logging.Make[F]): Resource[I, Client[F]] = {
@@ -80,12 +79,10 @@ object Clients {
             logBody = true,
             logAction = Some((msg: String) => logger.debug(msg))
           )(clientRequestF)
-        ).mapK(RequestContext.setupK)
+        ).mapK(RequestContext.setupK[I, F])
     }
 
     for {
-      given S3[F]                                    <- s3StreamResource
-      given RedisCommands[F, AccessToken, TokenInfo] <- redisResource
       given Client[F]                                <- httpClientResource
     } yield Clients[F]()
   }

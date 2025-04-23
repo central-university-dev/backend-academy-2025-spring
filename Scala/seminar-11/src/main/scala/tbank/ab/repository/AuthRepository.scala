@@ -1,43 +1,41 @@
 package tbank.ab.repository
 
+import cats.syntax.all.*
 import cats.Monad
 import cats.effect.Clock
-import cats.implicits.*
-import dev.profunktor.redis4cats.RedisCommands
-import tbank.ab.config.AuthConfig
+import cats.effect.Sync
+import cats.effect.Ref
+import tbank.ab.config.{AppConfig, AuthConfig}
 import tbank.ab.domain.auth.{AccessToken, TokenInfo}
 
-trait AuthRepository[F[_]] {
+import java.time.Instant
+
+trait AuthRepository[F[_]]:
   def find(token: AccessToken): F[Option[AccessToken]]
   def set(token: AccessToken): F[Unit]
-}
 
-object AuthRepository {
-
-  def make[F[_]: Monad](using
-    config: AuthConfig,
-    repo: RedisCommands[F, AccessToken, TokenInfo],
-    clock: Clock[F]
-  ): AuthRepository[F] =
-    new RedisImpl[F]
-
-  final private class RedisImpl[F[_]: Monad](using
-    repo: RedisCommands[F, AccessToken, TokenInfo],
-    config: AuthConfig,
-    clock: Clock[F]
-  ) extends AuthRepository[F] {
+object AuthRepository:
+  final private class InMemory[F[_]: Monad: Clock](
+    repo: Ref[F, Map[AccessToken, TokenInfo]],
+    config: AuthConfig
+  ) extends AuthRepository[F]:
 
     override def find(token: AccessToken): F[Option[AccessToken]] =
-      for {
-        tokenInfo <- repo.get(token)
-        now       <- clock.realTimeInstant
-      } yield Option.when(tokenInfo.exists(_.expiresIn.isAfter(now)))(token)
+      for
+        r <- repo.get
+        tokenInfo = r.get(token)
+        now       = Instant.now()
+      yield Option.when(
+        tokenInfo.exists(_.expiresIn.isAfter(now))
+      )(token)
 
     override def set(token: AccessToken): F[Unit] =
-      for {
-        now <- clock.realTimeInstant
+      for
+        now <- Clock[F].realTimeInstant
         expiresIn = now.plusSeconds(config.maxAge)
-        _ <- repo.set(token, TokenInfo(expiresIn))
-      } yield ()
-  }
-}
+        _ <- repo.update(map => map.updated(token, TokenInfo(expiresIn)))
+      yield ()
+
+  def make[I[_]: Sync, F[_]: Sync: Clock](using config: AppConfig): I[AuthRepository[F]] =
+    for ref <- Ref.in[I, F, Map[AccessToken, TokenInfo]](Map.empty)
+    yield InMemory(ref, config.auth)

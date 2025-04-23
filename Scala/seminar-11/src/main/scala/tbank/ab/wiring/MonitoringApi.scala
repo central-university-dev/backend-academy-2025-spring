@@ -9,7 +9,7 @@ import tbank.ab.controller.{Controller, ProbeController}
 final class MonitoringApi[F[_]](
   probeController: Controller[F]
 ) extends Controller[F] {
-  def endpoints: List[ServerEndpoint[Fs2Streams[F] & WebSockets, F]] =
+  def endpoints: List[ServerEndpoint[Any, F]] =
     probeController.endpoints
 }
 

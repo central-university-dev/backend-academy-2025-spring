@@ -14,10 +14,6 @@ private class AnimalController[F[_]: MonadThrow](
   authService: AuthService[F]
 ) extends Controller[F] {
 
-  private val allAnimals: ServerEndpoint[Fs2Streams[F], F] =
-    AnimalEndpoints.allAnimals
-      .serverLogicSuccessPure(_ => animalService.allAnimals)
-
   private val animalDescription: ServerEndpoint[Any, F] =
     AnimalEndpoints.animalDescription
       .serverLogic { id =>
@@ -56,8 +52,8 @@ private class AnimalController[F[_]: MonadThrow](
         )
       )
 
-  override val endpoints: List[ServerEndpoint[Fs2Streams[F], F]] =
-    List(animalDescription, animalInfo, updateAnimalInfo, allAnimals, randomFact)
+  override val endpoints: List[ServerEndpoint[Any, F]] =
+    List(animalDescription, animalInfo, updateAnimalInfo, randomFact)
       .map(_.withTag("Animals"))
 }
 

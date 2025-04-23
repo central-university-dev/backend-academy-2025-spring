@@ -5,20 +5,16 @@ import sttp.capabilities.WebSockets
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.tapir.server.ServerEndpoint
 import tbank.ab.config.AppConfig
-import tbank.ab.controller.{AnimalController, AuthController, ChatController, Controller, HabitatController}
+import tbank.ab.controller.{AnimalController, AuthController, Controller}
 
 final class PublicApi[F[_]](
   authController: Controller[F],
-  animalController: Controller[F],
-  habitatController: Controller[F],
-  chatController: Controller[F]
+  animalController: Controller[F]
 ) extends Controller[F] {
 
-  override def endpoints: List[ServerEndpoint[Fs2Streams[F] & WebSockets, F]] =
+  override def endpoints: List[ServerEndpoint[Any, F]] =
     authController.endpoints ++
-    animalController.endpoints ++
-    habitatController.endpoints ++
-    chatController.endpoints
+    animalController.endpoints
 }
 
 object PublicApi {
@@ -27,12 +23,10 @@ object PublicApi {
     import config.given
     import services.given
 
-    val authController: Controller[F]    = AuthController.make
-    val animalController: Controller[F]  = AnimalController.make
-    val habitatController: Controller[F] = HabitatController.make
-    val chatController: Controller[F]    = ChatController.make
+    val authController: Controller[F]   = AuthController.make
+    val animalController: Controller[F] = AnimalController.make
 
-    PublicApi(authController, animalController, habitatController, chatController)
+    PublicApi(authController, animalController)
   }
 
 }

@@ -204,6 +204,8 @@ lazy val `seminar-10` = project
 lazy val `seminar-11` = project
   .settings(
     libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps,
+  ).settings(
+    scalacOptions ++= Seq("-Ykind-projector:underscores")
   )
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
 

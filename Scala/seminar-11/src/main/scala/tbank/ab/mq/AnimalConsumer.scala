@@ -5,12 +5,12 @@ import cats.syntax.all._
 import fs2._
 import fs2.kafka._
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import tbank.ab.service.AnimalService
 import tbank.ab.config.KafkaConsumerConfig
-import tbank.ab.domain.animal.AnimalInfo
 import tbank.ab.domain.animal.AnimalId
-import tbank.ab.wiring.Services
+import tbank.ab.domain.animal.AnimalInfo
 import tbank.ab.domain.habitat.Habitat
+import tbank.ab.service.AnimalService
+import tbank.ab.wiring.Services
 import tethys._
 import tethys.jackson._
 
@@ -45,7 +45,7 @@ object AnimalConsumer {
       .records
       .parEvalMap(32) { committable =>
         committable.record.value match
-          case Left(err) => IO.unit.as(committable.offset)
+          case Left(err)    => IO.unit.as(committable.offset)
           case Right(value) => consumer.consume(committable.record.key, value).as(committable.offset)
       }
       .through(commitBatchWithin(128, 15.seconds))

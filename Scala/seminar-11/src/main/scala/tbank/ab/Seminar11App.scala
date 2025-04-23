@@ -1,7 +1,9 @@
 package tbank.ab
 
-import cats.effect.kernel.Resource
+import cats.arrow.FunctionK
+import cats.data.ReaderT
 import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.kernel.Resource
 import cats.implicits.*
 import pureconfig.ConfigSource
 import tbank.ab.config.{AppConfig, DbConfig, ServerConfig}
@@ -33,6 +35,8 @@ object Seminar11App extends IOApp {
       given DatabaseModule[IO] = DatabaseModule.make[IO]
       _ <- LiquibaseMigration.run[IO]().toResource
 
+      given FunctionK[IO, RequestIO] = ReaderT.liftK[IO, RequestContext]
+
       // Create wiring
       given Clients[RequestIO]      <- Clients.make[IO, RequestIO]
       given Repositories[RequestIO] <- Repositories.make[IO, RequestIO].toResource
@@ -41,7 +45,7 @@ object Seminar11App extends IOApp {
       given MonitoringApi[IO]       = MonitoringApi.make[IO]
 
       // Start server and consumer
-      _ <- HttpServer.startServer[IO, RequestIO]
+      _ <- HttpServer.startServer[IO]
 
       _ <- Resource.make(info"Application started")(_ => info"Closing application...")
     } yield ()

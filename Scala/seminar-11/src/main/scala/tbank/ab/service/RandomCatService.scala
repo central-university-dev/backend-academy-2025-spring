@@ -24,10 +24,8 @@ object RandomCatService extends LoggingCompanion[RandomCatService] {
     logging: RandomCatService.Log[F]
   ) extends RandomCatService[F] {
     def randomCatFact() =
-      debug"Searching for random fact..." *> 
-        httpClient.expect[String](config.randomCatFactUri).onError(e =>
-          errorCause"Failed to find random fact"(e)
-        )
+      debug"Searching for random fact..." *>
+      httpClient.expect[String](config.randomCatFactUri).onError(e => errorCause"Failed to find random fact" (e.getCause))
 
     given EntityDecoder[F, String] = EntityDecoder.text[F]
   }

@@ -18,18 +18,11 @@ type RequestIO[A] = ReaderT[IO, RequestContext, A]
 case class RequestContext(traceId: UUID) derives Loggable
 
 object RequestContext {
-
-//  def setupK[I[_] : FlatMap : GenUUID]: ReaderT[I, RequestContext, *] ~> I =
-//    new(ReaderT[I, RequestContext, *] ~> I) {
-//      override def apply[A](fa: ReaderT[I, RequestContext, A]): I[A] =
-//        GenUUID[I].randomUUID.flatMap(uuid => fa.run(RequestContext(uuid)))
-//    }
-    
+  
   def setupK[I[_] : FlatMap : GenUUID, F[_]](using withProvide: WithProvide[F, I, RequestContext]): F ~> I =
     new(F ~> I) {
       override def apply[A](fa: F[A]): I[A] =
         GenUUID[I].randomUUID.flatMap(uuid => withProvide.runContext(fa)(RequestContext(uuid)))
     }
-
-
+  
 }

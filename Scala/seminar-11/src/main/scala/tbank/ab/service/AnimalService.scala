@@ -26,7 +26,7 @@ object AnimalService {
   ): AnimalService[F] =
     Impl(repo, randomCatService)
 
-  final private class Impl[I[_], F[_]: Monad](repo: AnimalRepository[F], randomCatService: RandomCatService[F])
+  final private class Impl[F[_]: Monad](repo: AnimalRepository[F], randomCatService: RandomCatService[F])
     extends AnimalService[F] {
 
     override def animalDescription(id: AnimalId): F[Option[String]] =

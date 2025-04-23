@@ -6,6 +6,7 @@ ThisBuild / scalaVersion := "3.3.5"
 
 val `cats-core-version`         = "2.13.0"
 val `cats-effect-version`       = "3.5.7"
+val `cats-tagless-version`      = "0.16.3"
 val `tapir-version`             = "1.11.13"
 val `http4s-version`            = "0.23.30"
 val `sttp-client3-version`      = "3.10.2"
@@ -21,7 +22,8 @@ val `liquibase-version`         = "4.27.0"
 val `h2-version`                = "2.3.232"
 val `redis4cats-version`        = "1.7.2"
 val `fs2-aws-version`           = "6.2.0"
-val `fs2-kafka-version` = "3.6.0"
+val `fs2-kafka-version`         = "3.6.0"
+val `tofu-version`              = "0.13.7"
 
 val deps: List[ModuleID] = List(
   // cats
@@ -38,6 +40,7 @@ val deps: List[ModuleID] = List(
 
   // http4s
   "org.http4s" %% "http4s-ember-server" % `http4s-version`,
+  "org.http4s"    %% "http4s-ember-client" % `http4s-version`,
   "org.http4s" %% "http4s-dsl"          % `http4s-version`,
 
   // sttp
@@ -55,7 +58,15 @@ val deps: List[ModuleID] = List(
 
   // pureconfig
   "com.github.pureconfig" %% "pureconfig-core"           % `pureconfig-version`,
-  "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`
+  "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`,
+
+  // tofu
+  "tf.tofu" %% "tofu-core-ce3" % `tofu-version`,
+  "tf.tofu" %% "tofu-logging" % `tofu-version`,
+  "tf.tofu" %% "tofu-logging-derivation" % `tofu-version`,
+
+  // logback
+  "ch.qos.logback" % "logback-classic" % "1.4.8",
 )
 
 val testDeps: List[ModuleID] = List(
@@ -190,17 +201,26 @@ lazy val `seminar-10` = project
       dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
+lazy val `seminar-11` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps,
+  ).settings(
+    scalacOptions ++= Seq("-Ykind-projector:underscores")
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
 lazy val seminars = (project in file(".")).settings(
   name := "seminars"
 ).aggregate(
-  `seminar-1`,
-  `seminar-2`,
-  `seminar-3`,
-  `seminar-4`,
-  `seminar-4-it`,
-  `seminar-5`,
-  `seminar-6`,
-  `seminar-7`,
-  `seminar-8`,
-  `seminar-10`
+//  `seminar-1`,
+//  `seminar-2`,
+//  `seminar-3`,
+//  `seminar-4`,
+//  `seminar-4-it`,
+//  `seminar-5`,
+//  `seminar-6`,
+//  `seminar-7`,
+//  `seminar-8`,
+//  `seminar-10`,
+  `seminar-11`,
 )

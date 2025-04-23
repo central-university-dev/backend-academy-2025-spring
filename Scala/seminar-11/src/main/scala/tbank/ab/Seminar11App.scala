@@ -1,17 +1,13 @@
 package tbank.ab
 
-import cats.arrow.FunctionK
-import cats.data.ReaderT
-import cats.effect.{ExitCode, IO, IOApp}
 import cats.effect.kernel.Resource
+import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits.*
 import pureconfig.ConfigSource
 import tbank.ab.config.{AppConfig, DbConfig, ServerConfig}
-import tbank.ab.config.KafkaConsumerConfig
 import tbank.ab.db.DatabaseModule
 import tbank.ab.domain.{RequestContext, RequestIO}
-import tbank.ab.service.AnimalService
-import tbank.ab.wiring.{Clients, HttpServer, MonitoringApi, PublicApi, Repositories, Services}
+import tbank.ab.wiring.*
 import tofu.logging.Logging
 import tofu.syntax.logging.*
 

@@ -29,7 +29,7 @@ object Services:
     given AuthService[F]      = AuthService.make[F]
     given HabitatService[F]   = HabitatService.make[F]
     given RandomCatService[F] = RandomCatService.make[F]
-    given AnimalService[F]    = AnimalService.make[I, F]
+    given AnimalService[F]    = AnimalService.make[F]
     given ChatService[F]      = ChatService.make[F]
 
     Services()

@@ -76,7 +76,7 @@ object Clients {
         .build
         .map(clientRequestF =>
           Logger[F](
-            logHeaders = false,
+            logHeaders = true,
             logBody = true,
             logAction = Some((msg: String) => logger.debug(msg))
           )(clientRequestF)

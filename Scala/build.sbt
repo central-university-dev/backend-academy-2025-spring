@@ -67,7 +67,6 @@ val deps: List[ModuleID] = List(
 
   // logback
   "ch.qos.logback" % "logback-classic" % "1.4.8",
-  "ch.qos.logback.contrib" % "logback-jackson" % "0.1.5"
 )
 
 val testDeps: List[ModuleID] = List(

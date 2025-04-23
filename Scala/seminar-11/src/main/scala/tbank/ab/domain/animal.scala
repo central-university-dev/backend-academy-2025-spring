@@ -1,6 +1,5 @@
 package tbank.ab.domain
 
-import pureconfig.ConfigReader
 import sttp.tapir.{Codec, Schema}
 import tbank.ab.domain.habitat.Habitat
 import tethys.{JsonReader, JsonWriter}

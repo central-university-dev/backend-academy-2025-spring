@@ -3,6 +3,7 @@ package tbank.ab.service
 import cats.{Monad, MonadThrow}
 import cats.implicits.*
 import fs2.{Chunk, Stream}
+import tbank.ab.domain.RequestContext
 import tbank.ab.domain.animal.{AnimalId, AnimalInfo}
 import tbank.ab.repository.AnimalRepository
 import tofu.logging.LoggingCompanion
@@ -20,14 +21,14 @@ trait AnimalService[F[_]] {
 
 object AnimalService extends LoggingCompanion[AnimalService] {
 
-  def make[I[_], F[_]: MonadThrow](using
+  def make[F[_]: MonadThrow](using
     repo: AnimalRepository[F],
     randomCatService: RandomCatService[F],
     logging: AnimalService.Log[F]
   ): AnimalService[F] =
     Impl(repo, randomCatService)
 
-  final private class Impl[I[_], F[_]: Monad](repo: AnimalRepository[F], randomCatService: RandomCatService[F])(using
+  final private class Impl[F[_]: Monad](repo: AnimalRepository[F], randomCatService: RandomCatService[F])(using
     logging: AnimalService.Log[F]
   ) extends AnimalService[F] {
     override def allAnimals: Stream[F, Byte] =
@@ -45,7 +46,7 @@ object AnimalService extends LoggingCompanion[AnimalService] {
 
     override def animalInfo(id: AnimalId): F[Option[AnimalInfo]] =
       repo.find(id) <* debugWith"Found animal info" ("animalId" -> id)
-
+    
     override def updateAnimalInfo(
       id: AnimalId,
       info: AnimalInfo

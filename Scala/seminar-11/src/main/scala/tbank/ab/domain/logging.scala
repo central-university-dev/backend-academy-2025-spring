@@ -1,10 +1,10 @@
 package tbank.ab.domain
 
-import cats.{~>, FlatMap, Functor}
 import cats.data.ReaderT
 import cats.effect.IO
 import cats.implicits.*
 import cats.syntax.flatMap.*
+import cats.{FlatMap, ~>}
 import tofu.WithProvide
 import tofu.generate.GenUUID
 import tofu.logging.Loggable
@@ -15,7 +15,7 @@ import java.util.UUID
 
 type RequestIO[A] = ReaderT[IO, RequestContext, A]
 
-case class RequestContext(traceId: UUID) extends LogContext derives Loggable
+case class RequestContext(traceId: UUID) derives Loggable
 
 object RequestContext {
 

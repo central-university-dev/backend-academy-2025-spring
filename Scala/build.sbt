@@ -62,8 +62,8 @@ val deps: List[ModuleID] = List(
   "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`,
 
   // tofu
-  "tf.tofu" %% "tofu-core-ce3"           % `tofu-version`,
-  "tf.tofu" %% "tofu-logging"            % `tofu-version`,
+  "tf.tofu" %% "tofu-core-ce3" % `tofu-version`,
+  "tf.tofu" %% "tofu-logging" % `tofu-version`,
   "tf.tofu" %% "tofu-logging-derivation" % `tofu-version`,
 
   // logback
@@ -100,6 +100,12 @@ val nosqlDeps: List[ModuleID] = List(
 
 val kafkaDeps: List[ModuleID] = List(
   "com.github.fd4s" %% "fs2-kafka" % `fs2-kafka-version`
+)
+
+val telemetryDeps: List[ModuleID] = List(
+  "org.typelevel" %% "otel4s-oteljava" % "0.12.0",
+  "io.opentelemetry" % "opentelemetry-exporter-otlp" % "1.49.0" % Runtime,
+  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.49.0" % Runtime
 )
 
 lazy val `seminar-1` = project
@@ -232,6 +238,20 @@ lazy val `seminar-12-it` = project
     testFrameworks += new TestFramework("weaver.framework.CatsEffect")
   )
 
+lazy val `seminar-13` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps ++ telemetryDeps,
+  ).settings(
+    run / fork := true,
+    scalacOptions ++= Seq("-Ykind-projector:underscores"),
+    envVars ++= Map("OTEL_SERVICE_NAME" -> "auth-service"),
+    javaOptions ++= Seq(
+      "-Dotel.java.global-autoconfigure.enabled=true",
+      "-Dcats.effect.trackFiberContext=true"
+    )
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
 lazy val seminars = (project in file(".")).settings(
   name := "seminars"
 ).aggregate(
@@ -246,5 +266,6 @@ lazy val seminars = (project in file(".")).settings(
   `seminar-8`,
   `seminar-10`,
   `seminar-11`,
-  `seminar-12`
+  `seminar-12`,
+  `seminar-13`
 )

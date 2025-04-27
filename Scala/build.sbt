@@ -24,6 +24,7 @@ val `redis4cats-version`        = "1.7.2"
 val `fs2-aws-version`           = "6.2.0"
 val `fs2-kafka-version`         = "3.6.0"
 val `tofu-version`              = "0.13.7"
+val `wiremock-version`          = "3.3.1"
 
 val deps: List[ModuleID] = List(
   // cats
@@ -40,7 +41,7 @@ val deps: List[ModuleID] = List(
 
   // http4s
   "org.http4s" %% "http4s-ember-server" % `http4s-version`,
-  "org.http4s"    %% "http4s-ember-client" % `http4s-version`,
+  "org.http4s" %% "http4s-ember-client" % `http4s-version`,
   "org.http4s" %% "http4s-dsl"          % `http4s-version`,
 
   // sttp
@@ -61,20 +62,22 @@ val deps: List[ModuleID] = List(
   "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`,
 
   // tofu
-  "tf.tofu" %% "tofu-core-ce3" % `tofu-version`,
-  "tf.tofu" %% "tofu-logging" % `tofu-version`,
+  "tf.tofu" %% "tofu-core-ce3"           % `tofu-version`,
+  "tf.tofu" %% "tofu-logging"            % `tofu-version`,
   "tf.tofu" %% "tofu-logging-derivation" % `tofu-version`,
 
   // logback
-  "ch.qos.logback" % "logback-classic" % "1.4.8",
+  "ch.qos.logback" % "logback-classic" % "1.4.8"
 )
 
 val testDeps: List[ModuleID] = List(
   // for tests
   "com.disneystreaming" %% "weaver-cats" % `weaver-version` % Test,
   // containers - https://github.com/testcontainers/testcontainers-scala/blob/master/docs/src/main/tut/setup.md
-  "com.dimafeng"   %% "testcontainers-scala-mockserver" % `testcontainers-version`    % Test, // example for mockserver
-  "org.mock-server" % "mockserver-client-java"          % `mockserver-client-version` % Test
+  "com.dimafeng" %% "testcontainers-scala-mockserver" % `testcontainers-version` % Test, // example for mockserver
+  "org.wiremock"  % "wiremock-standalone"             % `wiremock-version`       % Test, // wiremock client
+  "com.dimafeng" %% "testcontainers-scala-wiremock"   % `testcontainers-version` % Test, // scala wrapper for wiremock
+  "org.mock-server" % "mockserver-client-java" % `mockserver-client-version` % Test
 )
 
 val dbDeps: List[ModuleID] = List(
@@ -167,47 +170,63 @@ lazy val `seminar-7` = project
 
 lazy val `seminar-8` = project
   .settings(
-      libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
-    )
-    .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
-    // Set docker build
-    .enablePlugins(
-      DockerPlugin,
-      JavaAppPackaging
-    )
-    .settings(
-      Compile / mainClass  := Some("tbank.ab.Seminar8App"), // class which will be run
-      dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
-      dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
-      Docker / packageName := "tbank-ab",                   // name of the Docker image
-      dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+  // Set docker build
+  .enablePlugins(
+    DockerPlugin,
+    JavaAppPackaging
+  )
+  .settings(
+    Compile / mainClass  := Some("tbank.ab.Seminar8App"), // class which will be run
+    dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
+    dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
+    Docker / packageName := "tbank-ab",                   // name of the Docker image
+    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
 lazy val `seminar-10` = project
   .settings(
-      libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
-    )
-    .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
-    // Set docker build
-    .enablePlugins(
-      DockerPlugin,
-      JavaAppPackaging
-    )
-    .settings(
-      Compile / mainClass  := Some("tbank.ab.Seminar10App"), // class which will be run
-      dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
-      dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
-      Docker / packageName := "tbank-ab",                   // name of the Docker image
-      dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+  // Set docker build
+  .enablePlugins(
+    DockerPlugin,
+    JavaAppPackaging
+  )
+  .settings(
+    Compile / mainClass  := Some("tbank.ab.Seminar10App"), // class which will be run
+    dockerBaseImage      := "eclipse-temurin:21",          // base image for Docker
+    dockerExposedPorts   := List(8080, 8083),              // defines exposing ports of the Docker image
+    Docker / packageName := "tbank-ab",                    // name of the Docker image
+    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
 lazy val `seminar-11` = project
   .settings(
-    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps,
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
   ).settings(
     scalacOptions ++= Seq("-Ykind-projector:underscores")
   )
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
+lazy val `seminar-12` = project
+  .settings(
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+  ).settings(
+    scalacOptions ++= Seq("-Ykind-projector:underscores")
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+
+lazy val `seminar-12-it` = project
+  .dependsOn(`seminar-12`)
+  // Set it tests
+  .settings(
+    libraryDependencies ++= testDeps,
+    testFrameworks += new TestFramework("weaver.framework.CatsEffect")
+  )
 
 lazy val seminars = (project in file(".")).settings(
   name := "seminars"
@@ -223,4 +242,5 @@ lazy val seminars = (project in file(".")).settings(
 //  `seminar-8`,
 //  `seminar-10`,
   `seminar-11`,
+  `seminar-12`
 )

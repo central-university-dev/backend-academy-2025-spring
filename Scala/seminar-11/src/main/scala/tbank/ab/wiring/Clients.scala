@@ -83,7 +83,7 @@ object Clients {
     }
 
     for {
-      given Client[F]                                <- httpClientResource
+      given Client[F] <- httpClientResource
     } yield Clients[F]()
   }
 }

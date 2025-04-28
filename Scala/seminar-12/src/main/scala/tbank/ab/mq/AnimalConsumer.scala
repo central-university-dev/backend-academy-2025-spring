@@ -37,7 +37,7 @@ object AnimalConsumer {
       .string[IO]
       .map(_.jsonAs[AnimalInfo])
 
-  def run(using config: KafkaConsumerConfig, services: Services[IO, IO]): Resource[IO, Unit] = {
+  def run(using config: KafkaConsumerConfig, services: Services[IO]): Resource[IO, Unit] = {
     val consumer = new Impl(services.animalService)
     KafkaConsumer
       .stream(ConsumerSettings[IO, AnimalId, Either[Throwable, AnimalInfo]].withProperties(config.properties))

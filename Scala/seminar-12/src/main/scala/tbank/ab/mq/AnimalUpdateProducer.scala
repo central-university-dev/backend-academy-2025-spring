@@ -13,6 +13,8 @@ import tbank.ab.wiring.Services
 import tethys._
 import tethys.jackson._
 
+import scala.concurrent.duration.*
+
 trait AnimalUpdateProducer[F[_]] {
   def produce(animalId: AnimalId): F[Unit]
 }
@@ -26,6 +28,9 @@ object AnimalUpdateProducer {
         .produceOne(ProducerRecord(topic, animalId, animalId))
         .flatten
         .void
+        .recoverWith(err => 
+          IO.sleep(100.millis)
+        )
   }
 
   given Serializer[IO, AnimalId] =

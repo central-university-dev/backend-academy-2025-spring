@@ -20,7 +20,6 @@ object Seminar12App extends IOApp {
 
   // Logging
   given Logging.Make[IO]        = Logging.Make.plain[IO]
-  given Logging.Make[RequestIO] = Logging.Make.contextual[RequestIO, RequestContext]
   given Logging[IO]             = Logging.Make[IO].forService[Seminar12App.type]
 
   def application: Resource[IO, Unit] =
@@ -38,10 +37,10 @@ object Seminar12App extends IOApp {
       given FunctionK[IO, RequestIO] = ReaderT.liftK[IO, RequestContext]
 
       // Create wiring
-      given Clients[RequestIO]      <- Clients.make[IO, RequestIO]
-      given Repositories[RequestIO] <- Repositories.make[IO, RequestIO].toResource
-      given Services[IO, RequestIO] = Services.make[IO, RequestIO]
-      given PublicApi[RequestIO]    = PublicApi.make[IO, RequestIO]
+      given Clients[IO]      <- Clients.make[IO]
+      given Repositories[IO] <- Repositories.make[IO].toResource
+      given Services[IO] = Services.make[IO]
+      given PublicApi[IO]    = PublicApi.make[IO]
       given MonitoringApi[IO]       = MonitoringApi.make[IO]
 
       // Start server and consumer

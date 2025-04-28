@@ -45,32 +45,28 @@ object HttpServer {
     if (config.swaggerEnabled) endpoints ::: SwaggerUI[F](openApi) else endpoints
   }
 
-  private def registerZone[I[_]: Async](
-    endpoints: List[ServerEndpoint[Fs2Streams[I] & WebSockets, I]],
+  private def registerZone[F[_]: Async](
+    endpoints: List[ServerEndpoint[Fs2Streams[F] & WebSockets, F]],
     config: ZoneConfig
-  ): Resource[I, Server] =
-    EmberServerBuilder.default[I]
+  ): Resource[F, Server] =
+    EmberServerBuilder.default[F]
       .withPort(Port.fromInt(config.port).get)
       .withHostOption(Host.fromString(config.host))
       .withHttpWebSocketApp(ws =>
-        Router("/" -> Http4sServerInterpreter[I]().toWebSocketRoutes(endpoints)(ws)).orNotFound
+        Router("/" -> Http4sServerInterpreter[F]().toWebSocketRoutes(endpoints)(ws)).orNotFound
       )
       .build
 
-  private def registerZoneWithLogging[I[_]: Async](
-    endpoints: List[ServerEndpoint[Any, ReaderT[I, RequestContext, *]]],
+  def registerZoneWithLogging[F[_]: Async](
+    endpoints: List[ServerEndpoint[Any, F]],
     config: ZoneConfig
-  )(using withProvide: WithProvide[ReaderT[I, RequestContext, *], I, RequestContext]): Resource[I, Server] = {
-
-    val endpointsI: List[ServerEndpoint[Any, I]] = endpoints.map { endpoint =>
-      transformKF[Any, I](endpoint, RequestContext.setupK[I, ReaderT[I, RequestContext, *]])
-    }
-
-    EmberServerBuilder.default[I]
+  ): Resource[F, Server] = {
+    
+    EmberServerBuilder.default[F]
       .withPort(Port.fromInt(config.port).get)
       .withHostOption(Host.fromString(config.host))
       .withHttpWebSocketApp { ws =>
-        Router("/" -> Http4sServerInterpreter[I]().toWebSocketRoutes(endpointsI)(ws)).orNotFound
+        Router("/" -> Http4sServerInterpreter[F]().toWebSocketRoutes(endpoints)(ws)).orNotFound
       }
       .build
   }
@@ -83,53 +79,25 @@ object HttpServer {
       info"SSwagger UI for $zone zone available at ${server.baseUri.renderString}/docs"
     )
 
-  def startServer[I[_]: Async](using
-    publicApi: PublicApi[ReaderT[I, RequestContext, *]],
-    monitoringApi: MonitoringApi[I],
+  def startServer[F[_]: Async](using
+    publicApi: PublicApi[F],
+    monitoringApi: MonitoringApi[F],
     conf: ServerConfig,
-    make: Logging.Make[I]
-  ): Resource[I, HttpServer] = {
+    make: Logging.Make[F]
+  ): Resource[F, HttpServer] = {
     val publicEndpoints     = withDocs(publicApi.endpoints, conf.public)
     val monitoringEndpoints = withDocs(monitoringApi.endpoints, conf.monitoring)
 
-    given Logging[I] = make.forService[HttpServer.type]
+    given Logging[F] = make.forService[HttpServer.type]
 
     for {
       _          <- Resource.make(info"Starting server...")(_ => info"Server closed")
-      public     <- registerZoneWithLogging[I](publicEndpoints, conf.public)
-      monitoring <- registerZone[I](monitoringEndpoints, conf.monitoring)
+      public     <- registerZoneWithLogging[F](publicEndpoints, conf.public)
+      monitoring <- registerZone[F](monitoringEndpoints, conf.monitoring)
       _          <- Resource.make(info"Server started")(_ => info"Closing server...")
 
-      _ <- Resource.eval(logZoneUri[I]("public", public, conf.public))
-      _ <- Resource.eval(logZoneUri[I]("monitoring", monitoring, conf.monitoring))
+      _ <- Resource.eval(logZoneUri[F]("public", public, conf.public))
+      _ <- Resource.eval(logZoneUri[F]("monitoring", monitoring, conf.monitoring))
     } yield HttpServer(public, monitoring)
   }
-
-  // def transformKF[S, F[_], G[_]](e: ServerEndpoint[S, F], mapK: F ~> G)(using
-  //     fMonad: MonadError[F]
-  // ): ServerEndpoint[S, G] =
-  //  ServerEndpoint[e.SECURITY_INPUT, e.PRINCIPAL, e.INPUT, e.ERROR_OUTPUT, e.OUTPUT, S, G](
-  //    e.endpoint,
-  //    _ => a => mapK(e.securityLogic(fMonad)(a)),
-  //    _ => u => i => mapK(e.logic(fMonad)(u)(i))
-  //  )
-
-  def transformKF[S, I[_]: Monad](
-    e: ServerEndpoint[S, ReaderT[I, RequestContext, *]],
-    mapK: ReaderT[I, RequestContext, *] ~> I
-  )(using
-    fMonad: MonadError[ReaderT[I, RequestContext, *]]
-  ): ServerEndpoint[S, I] =
-    ServerEndpoint[e.SECURITY_INPUT, (e.PRINCIPAL, RequestContext), e.INPUT, e.ERROR_OUTPUT, e.OUTPUT, S, I](
-      e.endpoint,
-      _ =>
-        a =>
-          mapK(
-            for {
-              result <- e.securityLogic(fMonad)(a)
-              ctx    <- ReaderT.ask[I, RequestContext]
-            } yield result.map(_ -> ctx)
-          ),
-      _ => { case (u, ctx) => i => e.logic(fMonad)(u)(i).run(ctx) }
-    )
 }

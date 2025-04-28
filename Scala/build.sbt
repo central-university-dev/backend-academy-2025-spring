@@ -67,7 +67,10 @@ val deps: List[ModuleID] = List(
   "tf.tofu" %% "tofu-logging-derivation" % `tofu-version`,
 
   // logback
-  "ch.qos.logback" % "logback-classic" % "1.4.8"
+  "ch.qos.logback" % "logback-classic" % "1.4.8",
+
+  // Circuit Breaker
+  "io.chrisdavenport" %% "circuit" % "0.5.1"
 )
 
 val testDeps: List[ModuleID] = List(
@@ -77,6 +80,7 @@ val testDeps: List[ModuleID] = List(
   "com.dimafeng" %% "testcontainers-scala-mockserver" % `testcontainers-version` % Test, // example for mockserver
   "org.wiremock"  % "wiremock-standalone"             % `wiremock-version`       % Test, // wiremock client
   "com.dimafeng" %% "testcontainers-scala-wiremock"   % `testcontainers-version` % Test, // scala wrapper for wiremock
+  "com.dimafeng" %% "testcontainers-scala-postgresql"   % `testcontainers-version` % Test,
   "org.mock-server" % "mockserver-client-java" % `mockserver-client-version` % Test
 )
 
@@ -97,6 +101,7 @@ val nosqlDeps: List[ModuleID] = List(
 val kafkaDeps: List[ModuleID] = List(
   "com.github.fd4s" %% "fs2-kafka" % `fs2-kafka-version`
 )
+
 
 lazy val `seminar-1` = project
   .settings(

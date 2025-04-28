@@ -36,6 +36,6 @@ object AuthRepository:
         _ <- repo.update(map => map.updated(token, TokenInfo(expiresIn)))
       yield ()
 
-  def make[I[_]: Sync, F[_]: Sync: Clock](using config: AppConfig): I[AuthRepository[F]] =
-    for ref <- Ref.in[I, F, Map[AccessToken, TokenInfo]](Map.empty)
+  def make[F[_]: Sync: Clock](using config: AppConfig): F[AuthRepository[F]] =
+    for ref <- Ref.of[F, Map[AccessToken, TokenInfo]](Map.empty)
     yield InMemory(ref, config.auth)

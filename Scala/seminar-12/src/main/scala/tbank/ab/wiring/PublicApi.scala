@@ -19,7 +19,7 @@ final class PublicApi[F[_]](
 
 object PublicApi {
 
-  def make[I[_]: Sync, F[_]: Sync](using services: Services[I, F], config: AppConfig): PublicApi[F] = {
+  def make[F[_]: Sync](using services: Services[F], config: AppConfig): PublicApi[F] = {
     import config.given
     import services.given
 

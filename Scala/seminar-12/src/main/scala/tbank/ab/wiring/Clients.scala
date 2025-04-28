@@ -1,7 +1,7 @@
 package tbank.ab.wiring
 
-import cats.syntax.all.*
 import cats.effect.{Async, Resource}
+import cats.syntax.all.*
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.codecs.Codecs
 import dev.profunktor.redis4cats.data.*
@@ -68,16 +68,15 @@ object Clients {
     Redis[I].withOptions(redisConfig.uri, clientOptions, redisCodec)
   }
 
-
-  def httpClientResource[F[_] : Async](using  make: Logging.Make[F]): Resource[F, Client[F]] = {
+  def httpClientResource[F[_]: Async](using make: Logging.Make[F]): Resource[F, Client[F]] = {
 
     def isRetriable(req: Request[F], result: Either[Throwable, Response[F]]): Boolean =
       req.isIdempotent &&
-        (result match {
-          case Left(_: ConnectionFailure) => true
-          case Right(res) if RetryPolicy.RetriableStatuses.contains(res.status) => true
-          case _ => false
-        })
+      (result match {
+        case Left(_: ConnectionFailure)                                       => true
+        case Right(res) if RetryPolicy.RetriableStatuses.contains(res.status) => true
+        case _                                                                => false
+      })
 
     val policy = RetryPolicy[F](backoff = RetryPolicy.exponentialBackoff(500.millis, 4), isRetriable)
 
@@ -85,21 +84,13 @@ object Clients {
       .default[F]
       .withTimeout(500.millis)
       .build
-      .map(client =>
-        Retry(policy)(client)
-      ).evalMap(client =>
-        circuitBreakerMiddle[F](client)
-      )
+      .map(client => Retry(policy)(client)).evalMap(client => circuitBreakerMiddle[F](client))
   }
 
-  case class FailedHttpStatusException[F[_]](response: Response[F], release: F[Unit]) extends Exception with NoStackTrace
-
-  private def circuitBreakerMiddle[F[_] : Async](client: Client[F])(using make: Logging.Make[F]): F[Client[F]] = {
+  private def circuitBreakerMiddle[F[_]: Async](client: Client[F])(using make: Logging.Make[F]): F[Client[F]] = {
     val logging: Logging[F] = make.forService[CircuitBreaker[F]]
-    
-    CircuitBreaker.default[F](
-        maxFailures = 2,
-        resetTimeout = 1.seconds)
+
+    CircuitBreaker.default[F](maxFailures = 2, resetTimeout = 1.seconds)
       .withOnOpen(logging.info("CircuitBreaker is open"))
       .withOnHalfOpen(logging.info("CircuitBreaker is half-open"))
       .withOnClosed(logging.info("CircuitBreaker is closed"))
@@ -115,6 +106,9 @@ object Clients {
       }
   }
 
+//
+//  case class FailedHttpStatusException[F[_]](response: Response[F], release: F[Unit]) extends Exception with NoStackTrace
+//
 //  private def circuitBreakerMiddle[F[_] : Async](client: Client[F]): F[Client[F]] = {
 //    CircuitBreaker.default[F](
 //        maxFailures = 2,
@@ -138,9 +132,8 @@ object Clients {
 //      }
 //  }
 
-
   def loggingHttpClientResource[F[_]: Async](using
-    make: Logging.Make[F],
+    make: Logging.Make[F]
   ): Resource[F, Client[F]] = {
     val logger = Logging.Make[F].forService[Client[F]]
 
@@ -154,9 +147,9 @@ object Clients {
       )
   }
 
-  def make[ F[_]: Async](using
+  def make[F[_]: Async](using
     config: AppConfig,
-    make: Logging.Make[F],
+    make: Logging.Make[F]
   ): Resource[F, Clients[F]] = {
     import config.given
 

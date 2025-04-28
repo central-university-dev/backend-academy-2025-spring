@@ -19,8 +19,8 @@ object Seminar12App extends IOApp {
       .as(ExitCode.Success)
 
   // Logging
-  given Logging.Make[IO]        = Logging.Make.plain[IO]
-  given Logging[IO]             = Logging.Make[IO].forService[Seminar12App.type]
+  given Logging.Make[IO] = Logging.Make.plain[IO]
+  given Logging[IO]      = Logging.Make[IO].forService[Seminar12App.type]
 
   def application: Resource[IO, Unit] =
     for {
@@ -39,9 +39,9 @@ object Seminar12App extends IOApp {
       // Create wiring
       given Clients[IO]      <- Clients.make[IO]
       given Repositories[IO] <- Repositories.make[IO].toResource
-      given Services[IO] = Services.make[IO]
-      given PublicApi[IO]    = PublicApi.make[IO]
-      given MonitoringApi[IO]       = MonitoringApi.make[IO]
+      given Services[IO]     <- Resource.eval(Services.make[IO])
+      given PublicApi[IO]     = PublicApi.make[IO]
+      given MonitoringApi[IO] = MonitoringApi.make[IO]
 
       // Start server and consumer
       _ <- HttpServer.startServer[IO]

@@ -5,13 +5,11 @@ import cats.syntax.all.toTraverseOps
 import com.dimafeng.testcontainers.WireMockContainer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.http.Fault
 import io.chrisdavenport.circuit.CircuitBreaker.RejectedExecution
-import org.http4s.{Header, Request, Response, Uri}
 import org.http4s.Method.POST
 import org.http4s.client.Client
-import org.http4s.headers.{`Idempotency-Key`, Accept}
-import org.typelevel.ci.*
+import org.http4s.headers.`Idempotency-Key`
+import org.http4s.{Header, Request, Uri}
 import tbank.ab.wiring.Clients
 import tofu.logging.Logging
 import weaver.*

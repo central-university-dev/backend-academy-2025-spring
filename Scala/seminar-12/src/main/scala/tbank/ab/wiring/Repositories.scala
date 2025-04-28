@@ -21,7 +21,7 @@ object Repositories:
   def make[F[_]: Async](using
     db: DatabaseModule[F],
     config: AppConfig,
-    clients: Clients[F],
+    clients: Clients[F]
   ): F[Repositories[F]] = {
     import clients.given
     import config.given

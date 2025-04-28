@@ -1,30 +1,25 @@
 package tbank.ab.wiring
 
-import cats.{~>, Applicative, Monad}
-import cats.data.{Kleisli, ReaderT}
+import cats.Monad
 import cats.effect.{Async, Resource}
+import cats.effect.std.Backpressure
 import cats.implicits.*
 import com.comcast.ip4s.{Host, Port}
 import fs2.io.net.Network
-import org.http4s.{HttpRoutes, Request, Response}
+import org.http4s.{HttpRoutes, Response}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.{Router, Server}
-import org.http4s.server.websocket.WebSocketBuilder2
+import org.http4s.server.middleware.Throttle
 import sttp.apispec.openapi.circe.yaml.RichOpenAPI
-import sttp.capabilities.WebSockets
-import sttp.capabilities.fs2.Fs2Streams
-import sttp.client3.impl.cats.implicits.asyncMonadError
-import sttp.monad.MonadError
 import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.SwaggerUI
 import tbank.ab.config.{ServerConfig, ZoneConfig}
-import tbank.ab.domain.RequestContext
-import tofu.WithProvide
-import tofu.generate.GenUUID
 import tofu.logging.Logging
 import tofu.syntax.logging.*
+
+import scala.concurrent.duration.*
 
 final case class HttpServer private (
   public: Server,
@@ -45,30 +40,27 @@ object HttpServer {
     if (config.swaggerEnabled) endpoints ::: SwaggerUI[F](openApi) else endpoints
   }
 
-  private def registerZone[F[_]: Async](
-    endpoints: List[ServerEndpoint[Fs2Streams[F] & WebSockets, F]],
-    config: ZoneConfig
-  ): Resource[F, Server] =
-    EmberServerBuilder.default[F]
-      .withPort(Port.fromInt(config.port).get)
-      .withHostOption(Host.fromString(config.host))
-      .withHttpWebSocketApp(ws =>
-        Router("/" -> Http4sServerInterpreter[F]().toWebSocketRoutes(endpoints)(ws)).orNotFound
-      )
-      .build
-
-  def registerZoneWithLogging[F[_]: Async](
+  def registerZone[F[_]: Async](
     endpoints: List[ServerEndpoint[Any, F]],
     config: ZoneConfig
   ): Resource[F, Server] = {
-    
-    EmberServerBuilder.default[F]
-      .withPort(Port.fromInt(config.port).get)
-      .withHostOption(Host.fromString(config.host))
-      .withHttpWebSocketApp { ws =>
-        Router("/" -> Http4sServerInterpreter[F]().toWebSocketRoutes(endpoints)(ws)).orNotFound
-      }
-      .build
+
+    val routes = Router("/" -> Http4sServerInterpreter[F]().toRoutes(endpoints))
+
+    val throttleAppF = Throttle.httpApp[F](
+      amount = 10,
+      per = 1.minute
+    )(routes.orNotFound)
+
+    Resource.eval(Backpressure[F](Backpressure.Strategy.Lossy, 1)).flatMap { backpressure =>
+      EmberServerBuilder.default[F]
+        .withPort(Port.fromInt(config.port).get)
+        .withHostOption(Host.fromString(config.host))
+        .withHttpApp(
+          RateLimiterMiddle.create(routes, backpressure).orNotFound
+        )
+        .build
+    }
   }
 
   private def logZoneUri[F[_]: Monad](zone: String, server: Server, conf: ZoneConfig)(using
@@ -92,7 +84,7 @@ object HttpServer {
 
     for {
       _          <- Resource.make(info"Starting server...")(_ => info"Server closed")
-      public     <- registerZoneWithLogging[F](publicEndpoints, conf.public)
+      public     <- registerZone[F](publicEndpoints, conf.public)
       monitoring <- registerZone[F](monitoringEndpoints, conf.monitoring)
       _          <- Resource.make(info"Server started")(_ => info"Closing server...")
 

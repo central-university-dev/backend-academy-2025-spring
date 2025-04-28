@@ -28,9 +28,7 @@ object AnimalUpdateProducer {
         .produceOne(ProducerRecord(topic, animalId, animalId))
         .flatten
         .void
-        .recoverWith(err => 
-          IO.sleep(100.millis)
-        )
+        .recoverWith(err => IO.sleep(100.millis))
   }
 
   given Serializer[IO, AnimalId] =

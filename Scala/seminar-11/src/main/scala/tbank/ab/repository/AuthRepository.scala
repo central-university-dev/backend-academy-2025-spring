@@ -1,10 +1,10 @@
 package tbank.ab.repository
 
+import cats.syntax.all.*
 import cats.Monad
 import cats.effect.Clock
-import cats.effect.Ref
 import cats.effect.Sync
-import cats.syntax.all.*
+import cats.effect.Ref
 import tbank.ab.config.{AppConfig, AuthConfig}
 import tbank.ab.domain.auth.{AccessToken, TokenInfo}
 

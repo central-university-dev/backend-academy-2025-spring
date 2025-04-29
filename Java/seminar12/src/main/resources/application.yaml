@@ -1,0 +1,46 @@
+server:
+    port: 8080
+
+resilience4j.retry:
+    instances:
+        getHotels:
+            maxAttempts: 3
+            waitDuration: 500
+            exponential-backoff-multiplier: 2
+            enable-exponential-backoff: true
+
+        getRoomTypesByHotelId:
+            maxAttempts: 2
+            waitDuration: 100
+
+resilience4j.circuitbreaker:
+    instances:
+        getHotels:
+            # Успешные и неуспешные запросы будут учитываться в скользящем окне.
+            # Размер скользящего окна — 20 запросов.
+            # Если в скользящем окне будет 50% неуспешных запросов, circuit breaker перейдет в открытое состояние.
+            # Через 10 секунд circuit breaker перейдет в полуоткрытое состояние
+            # и попробует выполнить 2 запросов.
+            # Если будет успешный ответ, circuit breaker перейдет в закрытое состояние, иначе — в открытое.
+            #
+            # Существует возможность настраивать скользящее окно на основе времени.
+            # А также трактоваться медленные запросы как неудачные
+            slidingWindowType: COUNT_BASED
+            minimumNumberOfCalls: 20
+            slidingWindowSize: 20
+            failureRateThreshold: 50 # процентов
+            waitDurationInOpenState: 5s # 5 секунд
+            permittedNumberOfCallsInHalfOpenState: 2
+
+resilience4j.ratelimiter:
+    instances:
+        getHotelsVRateLimiter:
+            limitForPeriod: 3
+            timeout-duration: 0s
+            limitRefreshPeriod: 5s
+
+resilience4j.bulkhead:
+    instances:
+        getStatistics:
+            maxConcurrentCalls: 1
+

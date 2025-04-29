@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Hotels API
+  version: 1.0.0
+
+paths:
+  /api/v1/hotels:
+    get:
+      tags:
+        - Hotels
+      summary: Get list of hotels
+      responses:
+        '200':
+          description: A list of hotels
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotels'
+
+components:
+  schemas:
+    Hotel:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the hotel
+        name:
+          type: string
+          description: Name of the hotel
+        address:
+          type: string
+          description: Address of the hotel
+    Hotels:
+      type: object
+      properties:
+        hotels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hotel'

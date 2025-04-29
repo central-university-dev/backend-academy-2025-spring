@@ -2,10 +2,17 @@ package tbank.ab
 
 import cats.arrow.FunctionK
 import cats.data.ReaderT
-import cats.effect.kernel.Resource
 import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.kernel.Resource
 import cats.implicits.*
+import io.opentelemetry.api.common.{AttributeKey, Attributes}
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder as AutoConfigOtelSdkBuilder
+import io.opentelemetry.sdk.resources.Resource as OtelResource
+import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.trace.Tracer
 import pureconfig.ConfigSource
+import sttp.tapir.server.metrics.opentelemetry.OpenTelemetryMetrics
 import tbank.ab.config.{AppConfig, DbConfig, ServerConfig}
 import tbank.ab.db.DatabaseModule
 import tbank.ab.domain.{RequestContext, RequestIO}
@@ -31,11 +38,15 @@ object Seminar13App extends IOApp {
       given DbConfig     = summon[AppConfig].database
       given ServerConfig = summon[AppConfig].server
 
+      given FunctionK[IO, RequestIO] = ReaderT.liftK[IO, RequestContext]
+
+      otel4s           <- OtelJava.autoConfigured[IO](customize)
+      given Tracer[IO] <- otel4s.tracerProvider.get("app").toResource
+      given Tracer[RequestIO] = Tracer[IO].mapK[RequestIO]
+
       // Connect to db
       given DatabaseModule[IO] = DatabaseModule.make[IO]
       _ <- LiquibaseMigration.run[IO]().toResource
-
-      given FunctionK[IO, RequestIO] = ReaderT.liftK[IO, RequestContext]
 
       // Create wiring
       given Clients[RequestIO]      <- Clients.make[IO, RequestIO]
@@ -49,4 +60,12 @@ object Seminar13App extends IOApp {
 
       _ <- Resource.make(info"Application started")(_ => info"Closing application...")
     } yield ()
+
+  private def customize(config: AutoConfigOtelSdkBuilder): AutoConfigOtelSdkBuilder = {
+    val customResource = OtelResource.getDefault.merge(
+      OtelResource.create(Attributes.of(AttributeKey.stringKey("service.name"), "Seminar-13"))
+    )
+    config.addResourceCustomizer((_, _) => customResource)
+    config
+  }
 }

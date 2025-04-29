@@ -2,7 +2,7 @@ import com.typesafe.sbt.packager.Keys.dockerEnvVars
 import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.Docker
 
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.3.5"
+ThisBuild / scalaVersion := "3.5.2"
 
 val `cats-core-version`         = "2.13.0"
 val `cats-effect-version`       = "3.5.7"
@@ -62,8 +62,8 @@ val deps: List[ModuleID] = List(
   "com.github.pureconfig" %% "pureconfig-generic-scala3" % `pureconfig-version`,
 
   // tofu
-  "tf.tofu" %% "tofu-core-ce3" % `tofu-version`,
-  "tf.tofu" %% "tofu-logging" % `tofu-version`,
+  "tf.tofu" %% "tofu-core-ce3"           % `tofu-version`,
+  "tf.tofu" %% "tofu-logging"            % `tofu-version`,
   "tf.tofu" %% "tofu-logging-derivation" % `tofu-version`,
 
   // logback
@@ -103,9 +103,10 @@ val kafkaDeps: List[ModuleID] = List(
 )
 
 val telemetryDeps: List[ModuleID] = List(
-  "org.typelevel" %% "otel4s-oteljava" % "0.12.0",
-  "io.opentelemetry" % "opentelemetry-exporter-otlp" % "1.49.0" % Runtime,
-  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "1.49.0" % Runtime
+  "org.typelevel"               %% "otel4s-oteljava"                           % "0.12.0",
+  "io.opentelemetry"             % "opentelemetry-exporter-otlp"               % "1.49.0" % Runtime,
+  "io.opentelemetry"             % "opentelemetry-sdk-extension-autoconfigure" % "1.49.0" % Runtime,
+  "com.softwaremill.sttp.tapir" %% "tapir-otel4s-tracing"                      % "1.11.25",
 )
 
 lazy val `seminar-1` = project
@@ -180,38 +181,38 @@ lazy val `seminar-7` = project
 
 lazy val `seminar-8` = project
   .settings(
-      libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
-    )
-    .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
-    // Set docker build
-    .enablePlugins(
-      DockerPlugin,
-      JavaAppPackaging
-    )
-    .settings(
-      Compile / mainClass  := Some("tbank.ab.Seminar8App"), // class which will be run
-      dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
-      dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
-      Docker / packageName := "tbank-ab",                   // name of the Docker image
-      dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+  // Set docker build
+  .enablePlugins(
+    DockerPlugin,
+    JavaAppPackaging
+  )
+  .settings(
+    Compile / mainClass  := Some("tbank.ab.Seminar8App"), // class which will be run
+    dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
+    dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
+    Docker / packageName := "tbank-ab",                   // name of the Docker image
+    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
 lazy val `seminar-10` = project
   .settings(
-      libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
-    )
-    .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
-    // Set docker build
-    .enablePlugins(
-      DockerPlugin,
-      JavaAppPackaging
-    )
-    .settings(
-      Compile / mainClass  := Some("tbank.ab.Seminar10App"), // class which will be run
-      dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
-      dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
-      Docker / packageName := "tbank-ab",                   // name of the Docker image
-      dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+  )
+  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+  // Set docker build
+  .enablePlugins(
+    DockerPlugin,
+    JavaAppPackaging
+  )
+  .settings(
+    Compile / mainClass  := Some("tbank.ab.Seminar10App"), // class which will be run
+    dockerBaseImage      := "eclipse-temurin:21",          // base image for Docker
+    dockerExposedPorts   := List(8080, 8083),              // defines exposing ports of the Docker image
+    Docker / packageName := "tbank-ab",                    // name of the Docker image
+    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
 lazy val `seminar-11` = project
@@ -240,10 +241,10 @@ lazy val `seminar-12-it` = project
 
 lazy val `seminar-13` = project
   .settings(
-    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps ++ telemetryDeps,
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps ++ telemetryDeps
   ).settings(
     run / fork := true,
-    scalacOptions ++= Seq("-Ykind-projector:underscores"),
+    scalacOptions ++= Seq("-Xkind-projector:underscores", "-experimental"),
     envVars ++= Map("OTEL_SERVICE_NAME" -> "auth-service"),
     javaOptions ++= Seq(
       "-Dotel.java.global-autoconfigure.enabled=true",

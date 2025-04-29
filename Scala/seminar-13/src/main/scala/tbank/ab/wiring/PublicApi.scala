@@ -1,6 +1,7 @@
 package tbank.ab.wiring
 
 import cats.effect.Sync
+import org.typelevel.otel4s.trace.Tracer
 import sttp.capabilities.WebSockets
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.tapir.server.ServerEndpoint
@@ -19,7 +20,7 @@ final class PublicApi[F[_]](
 
 object PublicApi {
 
-  def make[I[_]: Sync, F[_]: Sync](using services: Services[I, F], config: AppConfig): PublicApi[F] = {
+  def make[I[_]: Sync, F[_]: Sync: Tracer](using services: Services[I, F], config: AppConfig): PublicApi[F] = {
     import config.given
     import services.given
 

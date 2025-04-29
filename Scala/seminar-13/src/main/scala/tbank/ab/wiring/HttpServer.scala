@@ -10,6 +10,7 @@ import org.http4s.{HttpRoutes, Request, Response}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.{Router, Server}
 import org.http4s.server.websocket.WebSocketBuilder2
+import org.typelevel.otel4s.trace.Tracer
 import sttp.apispec.openapi.circe.yaml.RichOpenAPI
 import sttp.capabilities.WebSockets
 import sttp.capabilities.fs2.Fs2Streams
@@ -18,6 +19,8 @@ import sttp.monad.MonadError
 import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
+import sttp.tapir.server.http4s.Http4sServerOptions
+import sttp.tapir.server.tracing.otel4s.Otel4sTracing
 import sttp.tapir.swagger.SwaggerUI
 import tbank.ab.config.{ServerConfig, ZoneConfig}
 import tbank.ab.domain.RequestContext
@@ -47,19 +50,21 @@ object HttpServer {
 
   private def registerZone[I[_]: Async](
     endpoints: List[ServerEndpoint[Fs2Streams[I] & WebSockets, I]],
-    config: ZoneConfig
+    config: ZoneConfig,
+    options: Http4sServerOptions[I]
   ): Resource[I, Server] =
     EmberServerBuilder.default[I]
       .withPort(Port.fromInt(config.port).get)
       .withHostOption(Host.fromString(config.host))
       .withHttpWebSocketApp(ws =>
-        Router("/" -> Http4sServerInterpreter[I]().toWebSocketRoutes(endpoints)(ws)).orNotFound
+        Router("/" -> Http4sServerInterpreter[I](options).toWebSocketRoutes(endpoints)(ws)).orNotFound
       )
       .build
 
   private def registerZoneWithLogging[I[_]: Async](
     endpoints: List[ServerEndpoint[Any, ReaderT[I, RequestContext, *]]],
-    config: ZoneConfig
+    config: ZoneConfig,
+    options: Http4sServerOptions[I]
   )(using withProvide: WithProvide[ReaderT[I, RequestContext, *], I, RequestContext]): Resource[I, Server] = {
 
     val endpointsI: List[ServerEndpoint[Any, I]] = endpoints.map { endpoint =>
@@ -70,7 +75,10 @@ object HttpServer {
       .withPort(Port.fromInt(config.port).get)
       .withHostOption(Host.fromString(config.host))
       .withHttpWebSocketApp { ws =>
-        Router("/" -> Http4sServerInterpreter[I]().toWebSocketRoutes(endpointsI)(ws)).orNotFound
+        Router(
+          "/" -> Http4sServerInterpreter[I](options)
+            .toWebSocketRoutes(endpointsI)(ws)
+        ).orNotFound
       }
       .build
   }
@@ -87,17 +95,20 @@ object HttpServer {
     publicApi: PublicApi[ReaderT[I, RequestContext, *]],
     monitoringApi: MonitoringApi[I],
     conf: ServerConfig,
-    make: Logging.Make[I]
+    make: Logging.Make[I],
+    tracer: Tracer[I]
   ): Resource[I, HttpServer] = {
     val publicEndpoints     = withDocs(publicApi.endpoints, conf.public)
     val monitoringEndpoints = withDocs(monitoringApi.endpoints, conf.monitoring)
 
     given Logging[I] = make.forService[HttpServer.type]
 
+    val options = Http4sServerOptions.default[I].prependInterceptor(Otel4sTracing(tracer))
+
     for {
       _          <- Resource.make(info"Starting server...")(_ => info"Server closed")
-      public     <- registerZoneWithLogging[I](publicEndpoints, conf.public)
-      monitoring <- registerZone[I](monitoringEndpoints, conf.monitoring)
+      public     <- registerZoneWithLogging[I](publicEndpoints, conf.public, options)
+      monitoring <- registerZone[I](monitoringEndpoints, conf.monitoring, options)
       _          <- Resource.make(info"Server started")(_ => info"Closing server...")
 
       _ <- Resource.eval(logZoneUri[I]("public", public, conf.public))
@@ -113,14 +124,18 @@ object HttpServer {
   //    _ => a => mapK(e.securityLogic(fMonad)(a)),
   //    _ => u => i => mapK(e.logic(fMonad)(u)(i))
   //  )
-  
-  def transformKF[S, I[_]: Monad](e: ServerEndpoint[S, ReaderT[I, RequestContext, *]], mapK: ReaderT[I, RequestContext, *] ~> I)(using
+
+  def transformKF[S, I[_]: Monad](
+    e: ServerEndpoint[S, ReaderT[I, RequestContext, *]],
+    mapK: ReaderT[I, RequestContext, *] ~> I
+  )(using
     fMonad: MonadError[ReaderT[I, RequestContext, *]]
   ): ServerEndpoint[S, I] =
     ServerEndpoint[e.SECURITY_INPUT, (e.PRINCIPAL, RequestContext), e.INPUT, e.ERROR_OUTPUT, e.OUTPUT, S, I](
       e.endpoint,
       _ =>
-        a => mapK(
+        a =>
+          mapK(
             for {
               result <- e.securityLogic(fMonad)(a)
               ctx    <- ReaderT.ask[I, RequestContext]

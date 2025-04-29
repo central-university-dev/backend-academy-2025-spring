@@ -31,7 +31,7 @@ object HabitatEndpoints {
     (AnimalId, fs2.Stream[F, Byte]),
     (String, StatusCode),
     Unit,
-    Any with Fs2Streams[F]
+    Any & Fs2Streams[F]
   ] =
     endpoint.put
       .summary("upload animal image in its habitat")

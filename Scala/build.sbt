@@ -102,7 +102,6 @@ val kafkaDeps: List[ModuleID] = List(
   "com.github.fd4s" %% "fs2-kafka" % `fs2-kafka-version`
 )
 
-
 lazy val `seminar-1` = project
   .settings(
     libraryDependencies ++= deps
@@ -175,38 +174,38 @@ lazy val `seminar-7` = project
 
 lazy val `seminar-8` = project
   .settings(
-    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
-  )
-  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
-  // Set docker build
-  .enablePlugins(
-    DockerPlugin,
-    JavaAppPackaging
-  )
-  .settings(
-    Compile / mainClass  := Some("tbank.ab.Seminar8App"), // class which will be run
-    dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
-    dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
-    Docker / packageName := "tbank-ab",                   // name of the Docker image
-    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+      libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+    )
+    .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+    // Set docker build
+    .enablePlugins(
+      DockerPlugin,
+      JavaAppPackaging
+    )
+    .settings(
+      Compile / mainClass  := Some("tbank.ab.Seminar8App"), // class which will be run
+      dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
+      dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
+      Docker / packageName := "tbank-ab",                   // name of the Docker image
+      dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
 lazy val `seminar-10` = project
   .settings(
-    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
-  )
-  .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
-  // Set docker build
-  .enablePlugins(
-    DockerPlugin,
-    JavaAppPackaging
-  )
-  .settings(
-    Compile / mainClass  := Some("tbank.ab.Seminar10App"), // class which will be run
-    dockerBaseImage      := "eclipse-temurin:21",          // base image for Docker
-    dockerExposedPorts   := List(8080, 8083),              // defines exposing ports of the Docker image
-    Docker / packageName := "tbank-ab",                    // name of the Docker image
-    dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
+      libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps
+    )
+    .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "src" / "main" / "migrations")
+    // Set docker build
+    .enablePlugins(
+      DockerPlugin,
+      JavaAppPackaging
+    )
+    .settings(
+      Compile / mainClass  := Some("tbank.ab.Seminar10App"), // class which will be run
+      dockerBaseImage      := "eclipse-temurin:21",         // base image for Docker
+      dockerExposedPorts   := List(8080, 8083),             // defines exposing ports of the Docker image
+      Docker / packageName := "tbank-ab",                   // name of the Docker image
+      dockerEnvVars ++= Map("UNUSED_ENV_CONST_VAR" -> "some value") // environment variables for the Docker image
   )
 
 lazy val `seminar-11` = project
@@ -236,16 +235,16 @@ lazy val `seminar-12-it` = project
 lazy val seminars = (project in file(".")).settings(
   name := "seminars"
 ).aggregate(
-//  `seminar-1`,
-//  `seminar-2`,
-//  `seminar-3`,
-//  `seminar-4`,
-//  `seminar-4-it`,
-//  `seminar-5`,
-//  `seminar-6`,
-//  `seminar-7`,
-//  `seminar-8`,
-//  `seminar-10`,
+  `seminar-1`,
+  `seminar-2`,
+  `seminar-3`,
+  `seminar-4`,
+  `seminar-4-it`,
+  `seminar-5`,
+  `seminar-6`,
+  `seminar-7`,
+  `seminar-8`,
+  `seminar-10`,
   `seminar-11`,
   `seminar-12`
 )

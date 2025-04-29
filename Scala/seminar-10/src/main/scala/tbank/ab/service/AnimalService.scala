@@ -17,7 +17,7 @@ trait AnimalService[F[_]] {
 
 object AnimalService {
 
-  def make(using repo: AnimalRepository[IO], producer: AnimalUpdateProducer[IO]): AnimalService[IO] =
+  def make(using repo: AnimalRepository[IO], producer: AnimalUpdateProducer[IO]): AnimalService[IO] = 
     Impl(repo, producer)
 
   final private class Impl(repo: AnimalRepository[IO], producer: AnimalUpdateProducer[IO]) extends AnimalService[IO] {

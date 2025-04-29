@@ -18,18 +18,16 @@ final case class Repositories[F[_]]()(using
 )
 
 object Repositories:
-  def make[I[_]: Sync, F[_]: Async](using
-    db: DatabaseModule[I],
+  def make[F[_]: Async](using
+    db: DatabaseModule[F],
     config: AppConfig,
-    clients: Clients[F],
-    fk: I ~> F
-  ): I[Repositories[F]] = {
+    clients: Clients[F]
+  ): F[Repositories[F]] = {
     import clients.given
     import config.given
 
     for {
-      given AuthRepository[F] <- AuthRepository.make[I, F]
-      given DatabaseModule[F]   = DatabaseModule.mapK[I, F](db)(fk)
+      given AuthRepository[F] <- AuthRepository.make[F]
       given AnimalRepository[F] = AnimalRepository.make[F]
     } yield Repositories()
 

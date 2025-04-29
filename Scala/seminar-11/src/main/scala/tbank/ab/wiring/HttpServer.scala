@@ -113,14 +113,18 @@ object HttpServer {
   //    _ => a => mapK(e.securityLogic(fMonad)(a)),
   //    _ => u => i => mapK(e.logic(fMonad)(u)(i))
   //  )
-  
-  def transformKF[S, I[_]: Monad](e: ServerEndpoint[S, ReaderT[I, RequestContext, *]], mapK: ReaderT[I, RequestContext, *] ~> I)(using
+
+  def transformKF[S, I[_]: Monad](
+    e: ServerEndpoint[S, ReaderT[I, RequestContext, *]],
+    mapK: ReaderT[I, RequestContext, *] ~> I
+  )(using
     fMonad: MonadError[ReaderT[I, RequestContext, *]]
   ): ServerEndpoint[S, I] =
     ServerEndpoint[e.SECURITY_INPUT, (e.PRINCIPAL, RequestContext), e.INPUT, e.ERROR_OUTPUT, e.OUTPUT, S, I](
       e.endpoint,
       _ =>
-        a => mapK(
+        a =>
+          mapK(
             for {
               result <- e.securityLogic(fMonad)(a)
               ctx    <- ReaderT.ask[I, RequestContext]

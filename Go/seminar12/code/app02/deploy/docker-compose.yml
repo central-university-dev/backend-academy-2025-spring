@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./deploy/app.Dockerfile
+    restart: no
+    env_file:
+      - app.env
+    deploy:
+      resources:
+        limits:
+          cpus: '2'

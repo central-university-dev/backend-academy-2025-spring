@@ -107,6 +107,7 @@ val telemetryDeps: List[ModuleID] = List(
   "io.opentelemetry"             % "opentelemetry-exporter-otlp"               % "1.49.0" % Runtime,
   "io.opentelemetry"             % "opentelemetry-sdk-extension-autoconfigure" % "1.49.0" % Runtime,
   "com.softwaremill.sttp.tapir" %% "tapir-otel4s-tracing"                      % "1.11.25",
+  "io.github.arturaz"           %% "otel4s-doobie"                             % "0.3.0"
 )
 
 lazy val `seminar-1` = project
@@ -241,7 +242,8 @@ lazy val `seminar-12-it` = project
 
 lazy val `seminar-13` = project
   .settings(
-    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps ++ telemetryDeps
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps ++ telemetryDeps,
+    dependencyOverrides += "org.typelevel" %% "otel4s-core-trace" % "0.12.0"
   ).settings(
     run / fork := true,
     scalacOptions ++= Seq("-Xkind-projector:underscores", "-experimental"),

@@ -4,15 +4,12 @@ import cats.arrow.FunctionK
 import cats.data.ReaderT
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.effect.kernel.Resource
-import cats.implicits.*
 import io.opentelemetry.api.common.{AttributeKey, Attributes}
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder as AutoConfigOtelSdkBuilder
 import io.opentelemetry.sdk.resources.Resource as OtelResource
-import org.typelevel.otel4s.metrics.Meter
 import org.typelevel.otel4s.oteljava.OtelJava
 import org.typelevel.otel4s.trace.Tracer
 import pureconfig.ConfigSource
-import sttp.tapir.server.metrics.opentelemetry.OpenTelemetryMetrics
 import tbank.ab.config.{AppConfig, DbConfig, ServerConfig}
 import tbank.ab.db.DatabaseModule
 import tbank.ab.domain.{RequestContext, RequestIO}

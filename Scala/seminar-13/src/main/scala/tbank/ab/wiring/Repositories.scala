@@ -11,6 +11,7 @@ import tbank.ab.domain.RequestContext
 import tbank.ab.repository.{AnimalRepository, AuthRepository}
 import tofu.WithProvide
 import tofu.lift.Lift
+import org.typelevel.otel4s.trace.Tracer
 
 final case class Repositories[F[_]]()(using
   val animalRepo: AnimalRepository[F],
@@ -18,7 +19,7 @@ final case class Repositories[F[_]]()(using
 )
 
 object Repositories:
-  def make[I[_]: Sync, F[_]: Async](using
+  def make[I[_]: Sync, F[_]: Async: Tracer](using
     db: DatabaseModule[I],
     config: AppConfig,
     clients: Clients[F],

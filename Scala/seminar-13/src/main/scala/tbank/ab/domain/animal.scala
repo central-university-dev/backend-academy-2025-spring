@@ -1,5 +1,6 @@
 package tbank.ab.domain
 
+import org.typelevel.otel4s.Attribute
 import sttp.tapir.{Codec, Schema}
 import tbank.ab.domain.habitat.Habitat
 import tethys.{JsonReader, JsonWriter}
@@ -16,6 +17,8 @@ object animal {
     given (using jr: JsonReader[String]): JsonReader[AnimalId]            = jr
     given (using jw: JsonWriter[String]): JsonWriter[AnimalId]            = jw
     given (using log: Loggable[String]): Loggable[AnimalId]               = log
+    given Attribute.From[AnimalId, String]                                = _.toString
+    given Attribute.Make[AnimalId, String]                                = Attribute.Make.const("animal.id")
 
   final case class AnimalInfo(
     description: String,

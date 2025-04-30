@@ -8,7 +8,7 @@ import io.opentelemetry.api.common.{AttributeKey, Attributes}
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder as AutoConfigOtelSdkBuilder
 import io.opentelemetry.sdk.resources.Resource as OtelResource
 import org.typelevel.otel4s.oteljava.OtelJava
-import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.{Tracer, TracerProvider}
 import pureconfig.ConfigSource
 import tbank.ab.config.{AppConfig, DbConfig, ServerConfig}
 import tbank.ab.db.DatabaseModule
@@ -37,7 +37,8 @@ object Seminar13App extends IOApp {
 
       given FunctionK[IO, RequestIO] = ReaderT.liftK[IO, RequestContext]
 
-      otel4s           <- OtelJava.autoConfigured[IO](customize)
+      otel4s <- OtelJava.autoConfigured[IO](customize)
+      given TracerProvider[RequestIO] = otel4s.tracerProvider.mapK[RequestIO]
       given Tracer[IO] <- otel4s.tracerProvider.get("app").toResource
       given Tracer[RequestIO] = Tracer[IO].mapK[RequestIO]
 

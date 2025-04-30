@@ -8,7 +8,7 @@ import cats.tagless.*
 import cats.tagless.macros.*
 import cats.tagless.syntax.all.*
 import fs2.{Chunk, Stream}
-import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.{Attribute, AttributeKey, Attributes}
 import org.typelevel.otel4s.trace.Tracer
 import tbank.ab.domain.RequestContext
 import tbank.ab.domain.animal.{AnimalId, AnimalInfo}

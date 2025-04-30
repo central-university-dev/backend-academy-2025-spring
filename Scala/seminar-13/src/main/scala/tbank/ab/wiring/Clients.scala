@@ -1,7 +1,8 @@
 package tbank.ab.wiring
 
 import cats.~>
-import cats.effect.{Async, Resource}
+import cats.effect.{Async, MonadCancelThrow, Resource}
+import cats.syntax.all.*
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.codecs.Codecs
 import dev.profunktor.redis4cats.data.*
@@ -12,6 +13,11 @@ import io.lettuce.core.{ClientOptions, TimeoutOptions}
 import org.http4s.client.Client
 import org.http4s.client.middleware.Logger
 import org.http4s.ember.client.EmberClientBuilder
+import org.http4s.otel4s.middleware.trace.AttributeProvider
+import org.http4s.otel4s.middleware.trace.client.{ClientMiddleware, ClientSpanDataProvider}
+import org.http4s.otel4s.middleware.trace.client.UriRedactor.OnlyRedactUserInfo
+import org.typelevel.ci.CIStringSyntax
+import org.typelevel.otel4s.trace.{Tracer, TracerProvider}
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
@@ -30,7 +36,7 @@ case class Clients[F[_]]()(using
 
 object Clients {
 
-  def make[I[_]: Async, F[_]: Async](using
+  def make[I[_]: Async, F[_]: Async: TracerProvider](using
     config: AppConfig,
     logMake: Logging.Make[F],
     withProvide: WithProvide[F, I, RequestContext]
@@ -83,7 +89,16 @@ object Clients {
     }
 
     for {
-      given Client[F]                                <- httpClientResource
+      middleware <- Resource.eval(ClientMiddleware.builder[F] {
+                      ClientSpanDataProvider
+                        .openTelemetry(new OnlyRedactUserInfo {})
+                        .optIntoUrlScheme
+                        .optIntoUserAgentOriginal
+                        .and(AttributeProvider.middlewareVersion)
+                    }.build)
+                      .mapK(RequestContext.setupK[I, F])
+      client <- httpClientResource
+      given Client[F] = middleware.wrap(client)
     } yield Clients[F]()
   }
 }

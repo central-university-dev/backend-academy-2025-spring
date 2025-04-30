@@ -107,7 +107,8 @@ val telemetryDeps: List[ModuleID] = List(
   "io.opentelemetry"             % "opentelemetry-exporter-otlp"               % "1.49.0" % Runtime,
   "io.opentelemetry"             % "opentelemetry-sdk-extension-autoconfigure" % "1.49.0" % Runtime,
   "com.softwaremill.sttp.tapir" %% "tapir-otel4s-tracing"                      % "1.11.25",
-  "io.github.arturaz"           %% "otel4s-doobie"                             % "0.3.0"
+  "io.github.arturaz"           %% "otel4s-doobie"                             % "0.3.0",
+  "org.http4s"                  %% "http4s-otel4s-middleware-trace-client"     % "0.12.0"
 )
 
 lazy val `seminar-1` = project

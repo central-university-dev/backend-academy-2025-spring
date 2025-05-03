@@ -1,0 +1,32 @@
+services:
+    hotels-db:
+        image: "postgres:17-alpine"
+        container_name: hotels-db
+        environment:
+            - POSTGRES_USER=hotel-service
+            - POSTGRES_PASSWORD=test
+            - POSTGRES_DB=hotels
+        ports:
+            - '5432:5432'
+
+    reservations-db:
+        image: "postgres:17-alpine"
+        container_name: reservations-db
+        environment:
+            - POSTGRES_USER=reservation-service
+            - POSTGRES_PASSWORD=test
+            - POSTGRES_DB=reservations
+        ports:
+            - '5433:5432'
+
+    grafana-stack:
+        image: "grafana/otel-lgtm:0.11.0"
+        container_name: "grafana-stack"
+        environment:
+            - GF_PLUGINS_PREINSTALL=grafana-exploretraces-app
+            - GF_USERS_DEFAULT_THEME=light
+            - ENABLE_LOGS_ALL=true
+        ports:
+            - '3000:3000' # Grafana
+            - '4317:4317' # OTLP gRPC
+            - '4318:4318' # OTLP HTTP

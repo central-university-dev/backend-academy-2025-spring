@@ -1,0 +1,31 @@
+server:
+    port: 8081
+
+spring:
+    application:
+        name: reservation-service
+
+    datasource:
+        url: jdbc:postgresql://localhost:5433/reservations
+        username: reservation-service
+        password: test
+    sql:
+        init:
+            mode: always
+
+    jmx:
+        enabled: true
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: '*'
+        jmx:
+            exposure:
+                include: '*'
+
+otel:
+    exporter:
+        otlp:
+            endpoint: http://localhost:4318

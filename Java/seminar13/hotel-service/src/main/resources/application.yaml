@@ -1,0 +1,38 @@
+server:
+    port: 8080
+
+spring:
+    application:
+        name: hotels-service
+
+    datasource:
+        url: jdbc:postgresql://localhost:5432/hotels
+        username: hotel-service
+        password: test
+    sql:
+        init:
+            mode: always
+
+management:
+    endpoints:
+      web:
+        exposure:
+            include: '*'
+    tracing:
+        sampling:
+            # Default is 0.1
+            probability: 1.0
+    # or: zipkin, wavefront
+    otlp:
+        tracing:
+            # Tracing system-specific
+            endpoint: http://localhost:4318/v1/traces
+            export:
+                enabled: true
+        metrics:
+            export:
+                enabled: true
+                step: 30s
+                url: http://localhost:4318/v1/metrics
+        logging:
+            endpoint: http://localhost:4318/v1/logs

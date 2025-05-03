@@ -45,6 +45,7 @@
         <module>seminar8</module>
         <module>seminar10</module>
         <module>seminar12</module>
+        <module>seminar13</module>
     </modules>
 
     <repositories>

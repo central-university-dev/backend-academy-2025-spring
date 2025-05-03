@@ -6,7 +6,7 @@
     <parent>
         <groupId>backend.academy</groupId>
         <artifactId>2025</artifactId>
-        <version>1.0.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>seminar12</artifactId>

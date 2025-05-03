@@ -1,0 +1,5 @@
+### GET all hotels
+GET localhost:8080/api/hotels
+
+### GET all rooms in the hotel
+GET localhost:8080/api/hotels/1/rooms

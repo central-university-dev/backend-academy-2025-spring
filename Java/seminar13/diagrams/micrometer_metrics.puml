@@ -1,0 +1,35 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!define DEVICONS2 https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/v3.0.0/icons/devicons2
+!include DEVICONS2/prometheus_original.puml
+!include DEVICONS2/spring_original.puml
+!include DEVICONS2/postgresql.puml
+
+System_Boundary(springApp, "Spring Application") {
+  Container(springBootApp, "Spring Boot App", "Java, Spring Boot", "Processes Business Logic", $sprite="spring_original")
+
+  Component(micrometerCore, "Micrometer Core", "Instrumentation SPI\nand MeterRegistry factory")
+  Component(promRegistry, "PrometheusMeterRegistry", "Micrometer Registry")
+  Component(jmxRegistry, "JmxMeterRegistry", "Micrometer Registry")
+  Component(anotherRegistry, "Some Another Registry", "Micrometer Registry")
+  Component(actuator, "Spring Boot Actuator", "Exposes /actuator endpoints")
+  Component(hikariBinder, "HikariCPMetricsBinder", "Binds HikariCP pool metrics")
+}
+
+ContainerDb_Ext(db, "PostgreSQL", "Relational DB", "Stores app data", $sprite="postgresql")
+Container_Ext(promSystem, "Prometheus", "Monitoring system", "Pull‑based metrics storage", $sprite="prometheus_original")
+Container_Ext(jmxConsole, "JMX Console", "Monitoring system", "JMX‑based metrics")
+
+Rel(springBootApp, db, "Reads/Writes data")
+Rel(springBootApp, micrometerCore, "uses for instrumentation")
+Rel(springBootApp, actuator, "autoconfigures")
+Rel(micrometerCore, promRegistry, "creates")
+Rel(micrometerCore, jmxRegistry, "creates")
+Rel(micrometerCore, anotherRegistry, "creates")
+Rel(promSystem, actuator, "pulls metrics from /actuator/prometheus")
+Rel(actuator, promRegistry, "delegates pulling from")
+Rel(jmxConsole, jmxRegistry, "pulls app metrics from")
+Rel(hikariBinder, micrometerCore, "binds pool metrics into")
+
+@enduml

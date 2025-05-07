@@ -20,6 +20,7 @@ import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.server.http4s.Http4sServerOptions
+import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.server.tracing.otel4s.Otel4sTracing
 import sttp.tapir.swagger.SwaggerUI
 import tbank.ab.config.{ServerConfig, ZoneConfig}
@@ -63,6 +64,7 @@ object HttpServer {
 
   private def registerZoneWithLogging[I[_]: Async](
     endpoints: List[ServerEndpoint[Any, ReaderT[I, RequestContext, *]]],
+    metricsEndpoint: ServerEndpoint[Any, I],
     config: ZoneConfig,
     options: Http4sServerOptions[I]
   )(using withProvide: WithProvide[ReaderT[I, RequestContext, *], I, RequestContext]): Resource[I, Server] = {
@@ -77,7 +79,7 @@ object HttpServer {
       .withHttpWebSocketApp { ws =>
         Router(
           "/" -> Http4sServerInterpreter[I](options)
-            .toWebSocketRoutes(endpointsI)(ws)
+            .toWebSocketRoutes(endpointsI :+ metricsEndpoint)(ws)
         ).orNotFound
       }
       .build
@@ -103,11 +105,15 @@ object HttpServer {
 
     given Logging[I] = make.forService[HttpServer.type]
 
-    val options = Http4sServerOptions.default[I].prependInterceptor(Otel4sTracing(tracer))
+    val prometheusMetrics = PrometheusMetrics.default[I]()
+
+    val options = Http4sServerOptions.default[I]
+      .prependInterceptor(Otel4sTracing(tracer))
+      .prependInterceptor(prometheusMetrics.metricsInterceptor())
 
     for {
       _          <- Resource.make(info"Starting server...")(_ => info"Server closed")
-      public     <- registerZoneWithLogging[I](publicEndpoints, conf.public, options)
+      public     <- registerZoneWithLogging[I](publicEndpoints, prometheusMetrics.metricsEndpoint, conf.public, options)
       monitoring <- registerZone[I](monitoringEndpoints, conf.monitoring, options)
       _          <- Resource.make(info"Server started")(_ => info"Closing server...")
 

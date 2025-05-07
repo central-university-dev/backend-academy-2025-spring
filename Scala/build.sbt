@@ -111,6 +111,10 @@ val telemetryDeps: List[ModuleID] = List(
   "org.http4s"                  %% "http4s-otel4s-middleware-trace-client"     % "0.12.0"
 )
 
+val metricsDeps: List[ModuleID] = List(
+  "com.softwaremill.sttp.tapir" %% "tapir-prometheus-metrics" % "1.11.25"
+)
+
 lazy val `seminar-1` = project
   .settings(
     libraryDependencies ++= deps
@@ -243,7 +247,7 @@ lazy val `seminar-12-it` = project
 
 lazy val `seminar-13` = project
   .settings(
-    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps ++ telemetryDeps,
+    libraryDependencies ++= deps ++ dbDeps ++ nosqlDeps ++ kafkaDeps ++ telemetryDeps ++ metricsDeps,
     dependencyOverrides += "org.typelevel" %% "otel4s-core-trace" % "0.12.0"
   ).settings(
     run / fork := true,

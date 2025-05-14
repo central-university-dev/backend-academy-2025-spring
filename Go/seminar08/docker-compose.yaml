@@ -10,6 +10,9 @@ services:
 
   kafka1:
     image: confluentinc/cp-kafka:7.1.2
+    command: ["bash", "-c", "/etc/confluent/docker/run >/log/stdout.log 2>/log/stderr.log"]
+    volumes:
+      - ./containers-output/kafka1:/log
     hostname: kafka1
     container_name: kafka1
     ports:
@@ -30,6 +33,9 @@ services:
 
   kafka2:
     image: confluentinc/cp-kafka:7.1.2
+    command: ["bash", "-c", "/etc/confluent/docker/run >/log/stdout.log 2>/log/stderr.log"]
+    volumes:
+      - ./containers-output/kafka2:/log
     hostname: kafka2
     container_name: kafka2
     ports:

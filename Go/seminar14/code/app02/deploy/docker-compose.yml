@@ -1,0 +1,27 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one
+    ports:
+      - "4317:4317"
+      - "16686:16686"
+
+  app:
+    build:
+      context: ..
+      dockerfile: ./deploy/app.Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - app.env
+    depends_on:
+      - cache
+      - jaeger
+
+  cache:
+    image: valkey/valkey:7.2.5
+    command: [ "valkey-server", "/etc/valkey/valkey.conf" ]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./valkey.conf:/etc/valkey/valkey.conf
+      - ./users.acl:/etc/valkey/users.acl

@@ -1,0 +1,22 @@
+name: Docker Test
+on: [push]
+
+jobs:
+  docker-test:
+    runs-on: self-hosted
+    services:
+      docker:
+        image: docker:dind
+        ports:
+          - 2375:2375
+        options: --privileged
+    container:
+      image: docker:cli
+    steps:
+      - name: Test connection
+        run: |
+          docker --version
+          docker info
+      - name: Run Hello-World
+        run: |
+          docker run --rm hello-world
